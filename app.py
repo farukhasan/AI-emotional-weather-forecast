@@ -14,35 +14,42 @@ st.set_page_config(
     layout="centered"
 )
 
-# Clean Apple-like CSS with visible fonts
+# Clean CSS with Lexend Deca font and visible text
 st.markdown("""
 <style>
-    /* Force white background */
+    @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
+    
+    /* Force everything to be visible */
+    * {
+        color: #333333 !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
     .stApp {
         background-color: #ffffff !important;
     }
+    
     .main .block-container {
         background-color: #ffffff !important;
-        padding-top: 2rem;
+        padding-top: 2rem !important;
     }
     
-    /* Main title styling */
+    /* Title styling */
     .main-title {
         font-size: 2.5rem !important;
         font-weight: 600 !important;
         text-align: center !important;
-        color: #000000 !important;
+        color: #1a1a1a !important;
         margin-bottom: 0.5rem !important;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
-    /* Subtitle styling */
     .subtitle {
         font-size: 1.2rem !important;
         text-align: center !important;
         color: #666666 !important;
         margin-bottom: 3rem !important;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
     /* Decision card */
@@ -50,10 +57,21 @@ st.markdown("""
         background: #007aff !important;
         border-radius: 16px !important;
         padding: 2rem !important;
-        color: white !important;
+        color: #ffffff !important;
         text-align: center !important;
         margin: 2rem 0 !important;
         box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15) !important;
+    }
+    
+    .decision-card h2 {
+        color: #ffffff !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+        font-weight: 600 !important;
+    }
+    
+    .decision-card p {
+        color: #ffffff !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
     /* Recommendation boxes */
@@ -62,45 +80,39 @@ st.markdown("""
         border-radius: 12px !important;
         padding: 1.5rem !important;
         margin: 1rem 0 !important;
-        color: #000000 !important;
+        color: #1a1a1a !important;
         border: 1px solid #dee2e6 !important;
         font-weight: 500 !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
-    /* Do items (green) */
+    .recommendation strong {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
+    /* Do items */
     .do-item {
         background: #d4edda !important;
         border-radius: 8px !important;
         padding: 1rem !important;
         margin: 0.5rem 0 !important;
-        color: #000000 !important;
+        color: #1a1a1a !important;
         font-weight: 500 !important;
         border-left: 3px solid #28a745 !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
-    /* Don't items (red) */
+    /* Don't items */
     .dont-item {
         background: #f8d7da !important;
         border-radius: 8px !important;
         padding: 1rem !important;
         margin: 0.5rem 0 !important;
-        color: #000000 !important;
+        color: #1a1a1a !important;
         font-weight: 500 !important;
         border-left: 3px solid #dc3545 !important;
-    }
-    
-    /* Button styling */
-    .stButton > button {
-        width: 100% !important;
-        background: #007aff !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 1rem !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-        margin-top: 1.5rem !important;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
     /* Weather card */
@@ -109,26 +121,70 @@ st.markdown("""
         border-radius: 12px !important;
         padding: 1.5rem !important;
         margin: 1rem 0 !important;
-        color: #000000 !important;
+        color: #1a1a1a !important;
         text-align: center !important;
         border: 1px solid #dee2e6 !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
-    /* Override all text to be visible */
-    h1, h2, h3, h4, h5, h6, p, div, span, label {
-        color: #000000 !important;
+    .weather-card h3 {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+        font-weight: 600 !important;
     }
     
-    /* Streamlit specific overrides */
-    .stMarkdown, .stText {
-        color: #000000 !important;
+    .weather-card p {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        width: 100% !important;
+        background: #007aff !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 1rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        margin-top: 1.5rem !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
+    /* Streamlit widget overrides */
+    .stSelectbox label, .stSlider label {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+        font-weight: 500 !important;
+    }
+    
+    .stMarkdown {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
     
     /* Section headers */
-    .main h3 {
-        color: #000000 !important;
-        font-weight: 600 !important;
-        margin-bottom: 1rem !important;
+    h1, h2, h3, h4, h5, h6 {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
+    /* Markdown content */
+    p, div, span, strong {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
+    /* Footer text */
+    .footer-text {
+        color: #666666 !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+    }
+    
+    .footer-text strong {
+        color: #666666 !important;
+        font-family: 'Lexend Deca', sans-serif !important;
     }
 </style>
 """, unsafe_allow_html=True)
