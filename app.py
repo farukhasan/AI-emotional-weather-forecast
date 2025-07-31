@@ -14,177 +14,94 @@ st.set_page_config(
     layout="centered"
 )
 
-# Clean CSS with Lexend Deca font and visible text
+# Simple CSS with dark text on white background
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
     
-    /* Force everything to be visible */
-    * {
-        color: #333333 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
     .stApp {
-        background-color: #ffffff !important;
+        background-color: white;
+        font-family: 'Lexend Deca', sans-serif;
     }
     
-    .main .block-container {
-        background-color: #ffffff !important;
-        padding-top: 2rem !important;
-    }
-    
-    /* Title styling */
     .main-title {
-        font-size: 2.5rem !important;
-        font-weight: 600 !important;
-        text-align: center !important;
-        color: #1a1a1a !important;
-        margin-bottom: 0.5rem !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        font-size: 2.5rem;
+        font-weight: 600;
+        text-align: center;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        font-family: 'Lexend Deca', sans-serif;
     }
     
     .subtitle {
-        font-size: 1.2rem !important;
-        text-align: center !important;
-        color: #666666 !important;
-        margin-bottom: 3rem !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        font-size: 1.2rem;
+        text-align: center;
+        color: #666;
+        margin-bottom: 3rem;
+        font-family: 'Lexend Deca', sans-serif;
     }
     
-    /* Decision card */
     .decision-card {
-        background: #007aff !important;
-        border-radius: 16px !important;
-        padding: 2rem !important;
-        color: #ffffff !important;
-        text-align: center !important;
-        margin: 2rem 0 !important;
-        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15) !important;
+        background: #007aff;
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        text-align: center;
+        margin: 2rem 0;
+        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15);
     }
     
-    .decision-card h2 {
-        color: #ffffff !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-        font-weight: 600 !important;
-    }
-    
-    .decision-card p {
-        color: #ffffff !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Recommendation boxes */
     .recommendation {
-        background: #f8f9fa !important;
-        border-radius: 12px !important;
-        padding: 1.5rem !important;
-        margin: 1rem 0 !important;
-        color: #1a1a1a !important;
-        border: 1px solid #dee2e6 !important;
-        font-weight: 500 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        color: #1a1a1a;
+        border: 1px solid #dee2e6;
+        font-weight: 500;
     }
     
-    .recommendation strong {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Do items */
     .do-item {
-        background: #d4edda !important;
-        border-radius: 8px !important;
-        padding: 1rem !important;
-        margin: 0.5rem 0 !important;
-        color: #1a1a1a !important;
-        font-weight: 500 !important;
-        border-left: 3px solid #28a745 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        background: #d4edda;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: #1a1a1a;
+        font-weight: 500;
+        border-left: 3px solid #28a745;
     }
     
-    /* Don't items */
     .dont-item {
-        background: #f8d7da !important;
-        border-radius: 8px !important;
-        padding: 1rem !important;
-        margin: 0.5rem 0 !important;
-        color: #1a1a1a !important;
-        font-weight: 500 !important;
-        border-left: 3px solid #dc3545 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        background: #f8d7da;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: #1a1a1a;
+        font-weight: 500;
+        border-left: 3px solid #dc3545;
     }
     
-    /* Weather card */
     .weather-card {
-        background: #f8f9fa !important;
-        border-radius: 12px !important;
-        padding: 1.5rem !important;
-        margin: 1rem 0 !important;
-        color: #1a1a1a !important;
-        text-align: center !important;
-        border: 1px solid #dee2e6 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        color: #1a1a1a;
+        text-align: center;
+        border: 1px solid #dee2e6;
     }
     
-    .weather-card h3 {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-        font-weight: 600 !important;
-    }
-    
-    .weather-card p {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Button styling */
     .stButton > button {
-        width: 100% !important;
-        background: #007aff !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 1rem !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-        margin-top: 1.5rem !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Streamlit widget overrides */
-    .stSelectbox label, .stSlider label {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-        font-weight: 500 !important;
-    }
-    
-    .stMarkdown {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Section headers */
-    h1, h2, h3, h4, h5, h6 {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Markdown content */
-    p, div, span, strong {
-        color: #1a1a1a !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    /* Footer text */
-    .footer-text {
-        color: #666666 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
-    }
-    
-    .footer-text strong {
-        color: #666666 !important;
-        font-family: 'Lexend Deca', sans-serif !important;
+        width: 100%;
+        background: #007aff;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        font-family: 'Lexend Deca', sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -254,7 +171,7 @@ DECISION FRAMEWORK:
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
-    "wellness_score": 65,
+    "wellness_score": 45,
     "leave_type": "full_day_leave",
     "confidence": 82,
     "main_reason": "Primary reason for recommendation",
@@ -339,61 +256,27 @@ Weather considerations:
             "recovery_estimate": "1-3 days with proper rest"
         }
 
-def create_wellness_trend():
-    """Create wellness trend visualization"""
-    if len(st.session_state.assessments) < 2:
-        return None
-    
-    df = pd.DataFrame(st.session_state.assessments[-14:])
-    df['date'] = pd.to_datetime(df['date'])
-    df = df.sort_values('date')
-    
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=df['date'],
-        y=df['wellness_score'],
-        mode='lines+markers',
-        line=dict(color='#74b9ff', width=3),
-        marker=dict(size=10, color='#0984e3'),
-        fill='tonexty',
-        fillcolor='rgba(116, 185, 255, 0.2)'
-    ))
-    
-    fig.update_layout(
-        title="Your Wellness Journey",
-        xaxis_title="Date",
-        yaxis_title="Wellness Score",
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font=dict(family="-apple-system, BlinkMacSystemFont, sans-serif"),
-        showlegend=False,
-        height=350,
-        yaxis=dict(range=[0, 100])
-    )
-    
-    return fig
-
 def main():
-    # Header
-    st.markdown('<h1 class="main-title">Should I Take Leave Tomorrow?</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">AI-powered decision making for your work-life balance</p>', unsafe_allow_html=True)
+    # Header with inline styles to ensure visibility
+    st.markdown('<h1 style="font-size: 2.5rem; font-weight: 600; text-align: center; color: #1a1a1a; margin-bottom: 0.5rem; font-family: Lexend Deca, sans-serif;">Should I Take Leave Tomorrow?</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="font-size: 1.2rem; text-align: center; color: #666; margin-bottom: 3rem; font-family: Lexend Deca, sans-serif;">AI-powered decision making for your work-life balance</p>', unsafe_allow_html=True)
     
     # Get tomorrow's weather
     weather = get_weather_tomorrow()
     
-    # Weather display
+    # Weather display with inline styles
     st.markdown(f'''
-    <div class="weather-card">
-        <h3 style="margin: 0; color: #000000 !important; font-weight: 600;">Tomorrow's Weather</h3>
-        <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #000000 !important;">
-            <strong>{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
+    <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; text-align: center; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
+        <h3 style="margin: 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Weather</h3>
+        <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
+            <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
             {weather['condition']} • {weather['rain_chance']}% chance of rain
         </p>
     </div>
     ''', unsafe_allow_html=True)
     
-    # Input section
-    st.markdown("### How are you feeling today?")
+    # Input section header
+    st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">How are you feeling today?</h3>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -469,13 +352,14 @@ def main():
                 "work_normally": ("Work Normally", "#27ae60")
             }
             
-            decision_text, decision_color = leave_type_map.get(analysis['leave_type'], ("Work With Care", "#74b9ff"))
+            decision_text, decision_color = leave_type_map.get(analysis['leave_type'], ("Work With Care", "#007aff"))
             
+            # Decision card with inline styles
             st.markdown(f"""
-            <div class="decision-card">
-                <h2 style="margin: 0; font-weight: 600;">{decision_text}</h2>
-                <p style="font-size: 1.1rem; opacity: 0.9; margin: 1rem 0;">{analysis['decision_summary']}</p>
-                <p style="font-size: 0.9rem; opacity: 0.8;">Confidence: {analysis['confidence']}%</p>
+            <div style="background: #007aff; border-radius: 16px; padding: 2rem; color: white; text-align: center; margin: 2rem 0; box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15); font-family: Lexend Deca, sans-serif;">
+                <h2 style="margin: 0; font-weight: 600; color: white; font-family: Lexend Deca, sans-serif;">{decision_text}</h2>
+                <p style="font-size: 1.1rem; opacity: 0.9; margin: 1rem 0; color: white; font-family: Lexend Deca, sans-serif;">{analysis['decision_summary']}</p>
+                <p style="font-size: 0.9rem; opacity: 0.8; color: white; font-family: Lexend Deca, sans-serif;">Confidence: {analysis['confidence']}%</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -484,46 +368,49 @@ def main():
             
             if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
                 with col1:
-                    st.markdown("**Recovery Activities:**")
+                    st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Recovery Activities:</p>', unsafe_allow_html=True)
                     for item in analysis.get('leave_activities', []):
-                        st.markdown(f'<div class="do-item">{item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div style="background: #d4edda; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #28a745; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
                 
                 with col2:
-                    st.markdown("**Avoid During Leave:**")
+                    st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Avoid During Leave:</p>', unsafe_allow_html=True)
                     for item in analysis.get('leave_avoid', []):
-                        st.markdown(f'<div class="dont-item">{item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div style="background: #f8d7da; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #dc3545; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
             else:
                 with col1:
-                    st.markdown("**If You Work Tomorrow:**")
+                    st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">If You Work Tomorrow:</p>', unsafe_allow_html=True)
                     for item in analysis.get('work_activities', []):
-                        st.markdown(f'<div class="do-item">{item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div style="background: #d4edda; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #28a745; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
                 
                 with col2:
-                    st.markdown("**Avoid While Working:**")
+                    st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Avoid While Working:</p>', unsafe_allow_html=True)
                     for item in analysis.get('work_avoid', []):
-                        st.markdown(f'<div class="dont-item">{item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div style="background: #f8d7da; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #dc3545; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
             
+            # Warning signs and recovery time
             if analysis.get('warning_signs'):
                 st.markdown(f"""
-                <div class="recommendation">
-                    <strong>Watch for these warning signs:</strong><br>
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-weight: 500; font-family: Lexend Deca, sans-serif;">
+                    <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">Watch for these warning signs:</strong><br>
                     {' • '.join(analysis['warning_signs'])}
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Recovery timeline
             if analysis.get('recovery_estimate'):
                 st.markdown(f"""
-                <div class="recommendation">
-                    <strong>Expected recovery time:</strong> {analysis['recovery_estimate']}
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-weight: 500; font-family: Lexend Deca, sans-serif;">
+                    <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">Expected recovery time:</strong> {analysis['recovery_estimate']}
                 </div>
                 """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")
     st.markdown("""
-    <div style="text-align: center; color: #666666 !important; font-size: 0.9rem; padding: 1.5rem;">
-        <strong>Your wellbeing matters.</strong> This tool provides guidance, not medical advice.<br>
+    <div style="text-align: center; color: #666; font-size: 0.9rem; padding: 1.5rem; font-family: Lexend Deca, sans-serif;">
+        <strong style="color: #666; font-family: Lexend Deca, sans-serif;">Your wellbeing matters.</strong> This tool provides guidance, not medical advice.<br>
         For serious mental health concerns, please consult a healthcare professional.
     </div>
     """, unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
