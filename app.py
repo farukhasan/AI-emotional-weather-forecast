@@ -1,344 +1,571 @@
 import streamlit as st
-import pandas as pd
-import altair as alt
-from datetime import datetime
-import json
-import random
 import google.generativeai as genai
+import sqlite3
+import pandas as pd
+import plotly.express as px
+import requests
+from datetime import datetime, timedelta
+import json
 
-# ------------------------------
-# Streamlit page config
-# ------------------------------
-st.set_page_config(page_title="MoodCast AI 🌤️", page_icon="🌤️", layout="centered")
+# Page config with minimalistic design
+st.set_page_config(
+    page_title="MoodCast",
+    page_icon="🌤️",
+    layout="centered",  # Changed to centered for cleaner look
+    initial_sidebar_state="collapsed"
+)
 
-# ------------------------------
-# Custom minimal Apple-like CSS
-# ------------------------------
+# Initialize session state
+if 'mood_history' not in st.session_state:
+    st.session_state.mood_history = []
+if 'current_forecast' not in st.session_state:
+    st.session_state.current_forecast = None
+
+# API Keys
+try:
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    WEATHER_API_KEY = st.secrets.get("PIRATE_WEATHER_API_KEY", "")
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-pro')
+except:
+    st.error("⚠️ Please add your API keys to Streamlit secrets!")
+    st.stop()
+
+# Custom CSS for minimalistic design
 st.markdown("""
 <style>
-    html, body, [class*="css"] {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: #F9FAFB;
-        color: #1F2937;
+    /* Main container styling */
+    .main-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1rem;
     }
-    h1, h2, h3 {
-        font-weight: 500;
-        color: #111827;
-    }
-    .center-text {
-        text-align: center;
-        padding: 10px 0;
-    }
+    
+    /* Card styling */
     .card {
-        background-color: white;
-        border-radius: 16px;
-        padding: 30px;
-        margin: 30px 0;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
     }
-    .timestamp {
-        font-size: 0.85em;
-        color: #9CA3AF;
-        margin-top: 1em;
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Forecast card styling */
+    .forecast-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
         text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     }
-    .suggestion-title {
+    
+    /* Input styling */
+    .stTextInput, .stSelectbox, .stSlider, .stNumberInput {
+        margin-bottom: 1rem;
+    }
+    
+    /* Button styling */
+    .stButton button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
         font-weight: 600;
-        margin-top: 15px;
-        color: #2563EB;
+        transition: all 0.3s ease;
     }
-    .dos {
-        color: #16A34A;
-        margin-left: 20px;
+    
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-    .donts {
-        color: #DC2626;
-        margin-left: 20px;
+    
+    /* Section headers */
+    .section-header {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #333;
+        display: flex;
+        align-items: center;
     }
-    .bold-move {
-        color: #D97706;
-        margin-left: 20px;
-        font-weight: 700;
+    
+    .section-header .icon {
+        margin-right: 0.5rem;
+    }
+    
+    /* Footer styling */
+    .footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 1rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    /* Mood selection styling */
+    .mood-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .mood-option {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    
+    .mood-option:hover {
+        border-color: #667eea;
+    }
+    
+    .mood-option.selected {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    /* Forecast item styling */
+    .forecast-item {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .forecast-item-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .forecast-item-title .icon {
+        margin-right: 0.5rem;
+    }
+    
+    /* Chart container */
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------
-# Initialize Gemini AI
-# ------------------------------
-try:
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-pro')
-except Exception as e:
-    st.error("⚠️ Please set your GEMINI_API_KEY in Streamlit secrets to enable AI features.")
-    st.stop()
+def get_weather_data(lat=23.8103, lon=90.4125):
+    """Get real weather data using Pirate Weather API"""
+    if not WEATHER_API_KEY:
+        return {
+            "condition": "partly_cloudy_day", 
+            "temp": 28, 
+            "temp_high": 32,
+            "temp_low": 24,
+            "humidity": 75, 
+            "description": "Partly cloudy with gentle breeze",
+            "feels_like": 31,
+            "wind_speed": 12,
+            "uv_index": 6
+        }
+    
+    try:
+        url = f"https://api.pirateweather.net/forecast/{WEATHER_API_KEY}/{lat},{lon}"
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        
+        current = data["currently"]
+        daily = data["daily"]["data"][0] if "daily" in data else {}
+        
+        return {
+            "condition": current.get("icon", "clear-day").replace("-", "_"),
+            "temp": round((current["temperature"] - 32) * 5/9),
+            "temp_high": round((daily.get("temperatureHigh", current["temperature"]) - 32) * 5/9),
+            "temp_low": round((daily.get("temperatureLow", current["temperature"]) - 32) * 5/9),
+            "humidity": round(current["humidity"] * 100),
+            "description": current.get("summary", "Clear conditions"),
+            "feels_like": round((current.get("apparentTemperature", current["temperature"]) - 32) * 5/9),
+            "wind_speed": round(current.get("windSpeed", 0) * 1.609),
+            "uv_index": current.get("uvIndex", 0)
+        }
+    except Exception as e:
+        print(f"Weather API error: {e}")
+        return {
+            "condition": "partly_cloudy_day", 
+            "temp": 28, 
+            "temp_high": 32,
+            "temp_low": 24,
+            "humidity": 75, 
+            "description": "Partly cloudy conditions",
+            "feels_like": 31,
+            "wind_speed": 12,
+            "uv_index": 6
+        }
 
-# ------------------------------
-# App Title & Header
-# ------------------------------
-st.markdown("""
-<div class="center-text">
-    <h1 style="font-size:3em;">🌤 MoodCast AI</h1>
-    <p style="font-size:1.15em; color:#6B7280;">Your AI-Powered Emotional Weather Companion</p>
-</div>
-""", unsafe_allow_html=True)
-
-# ------------------------------
-# User inputs for mood and context
-# ------------------------------
-st.subheader("💬 How are you feeling today?")
-
-cols = st.columns(3)
-happiness = cols[0].slider("Happiness 😊", 0, 10, 5, help="Your current joy/contentment level")
-stress = cols[1].slider("Stress 😟", 0, 10, 5, help="How tense or overwhelmed you feel")
-energy = cols[2].slider("Energy ⚡", 0, 10, 5, help="Your alertness and vitality")
-
-# Additional context for AI personalization
-st.subheader("📝 Additional context (optional but helpful)")
-profession = st.text_input("Your Profession (e.g., Teacher, Developer, Student)")
-relationship = st.selectbox("Relationship Status", ["Single", "In a relationship", "Married", "It's complicated", "Prefer not to say"])
-sleep_hours = st.slider("Hours of Sleep Last Night", 0.0, 12.0, 7.0, step=0.5)
-stressors = st.text_area("Current Challenges or Stressors", placeholder="E.g., Work deadlines, family issues...")
-events = st.text_area("Today's Important Events or Plans", placeholder="E.g., Presentation at 2pm, meeting with friend...")
-
-# ------------------------------
-# Session state to keep mood history and notes
-# ------------------------------
-if "mood_history" not in st.session_state:
-    st.session_state.mood_history = []
-
-if "mood_notes" not in st.session_state:
-    st.session_state.mood_notes = []
-
-# ------------------------------
-# Helper: Save mood entry
-# ------------------------------
-def save_mood_entry():
-    entry = {
-        "timestamp": datetime.now().isoformat(),
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "happiness": happiness,
-        "stress": stress,
-        "energy": energy,
-        "profession": profession,
-        "relationship": relationship,
-        "sleep_hours": sleep_hours,
-        "stressors": stressors,
-        "events": events,
-    }
-    st.session_state.mood_history.insert(0, entry)
-    if len(st.session_state.mood_history) > 30:
-        st.session_state.mood_history.pop()
-
-# ------------------------------
-# AI Prompt Template
-# ------------------------------
-def generate_ai_prompt(entry):
+def generate_ai_forecast(mood_data, weather_data, mood_history):
+    """Generate AI-powered emotional forecast with creative suggestions"""
+    
+    # Prepare context for AI
+    history_summary = ""
+    if mood_history:
+        recent_moods = [f"{entry['date']}: {entry['mood']} (Energy: {entry['energy']}, Stability: {entry['stability']})" 
+                       for entry in mood_history[-5:]]
+        history_summary = f"Recent mood pattern: {'; '.join(recent_moods)}"
+    
     prompt = f"""
-You are an expert emotional wellness AI coach. Analyze the following person's current emotional state and environment, and generate a detailed emotional forecast.
-
-CURRENT STATE:
-- Happiness level: {entry['happiness']} / 10
-- Stress level: {entry['stress']} / 10
-- Energy level: {entry['energy']} / 10
-- Hours of sleep last night: {entry['sleep_hours']}
-- Profession: {entry['profession'] or 'Not specified'}
-- Relationship status: {entry['relationship']}
-- Current stressors: {entry['stressors'] or 'None specified'}
-- Today's events: {entry['events'] or 'None specified'}
-
-Your output should be a JSON with keys:
-- forecast_summary: a creative and uplifting description of today's emotional weather
-- confidence: percentage confidence of your analysis (e.g., '88%')
-- dos: a list of 3 actionable things the user SHOULD do today
-- donts: a list of 3 things the user should AVOID today
-- bold_moves: 1 or 2 bold suggestions to improve their day
-- emotional_tips: additional creative advice personalized for the user
-- risk_factors: potential emotional pitfalls to watch out for
-- power_moves: things to do to maximize emotional strength today
-
-Respond ONLY with valid JSON.
-"""
-    return prompt
-
-# ------------------------------
-# AI Call function
-# ------------------------------
-def call_ai_model(prompt):
+    You are an advanced emotional wellness AI coach with expertise in psychology, productivity, and life coaching. 
+    Analyze this person's current state and provide a highly personalized, creative emotional forecast with specific actionable suggestions.
+    CURRENT PERSON'S STATE:
+    - Mood: {mood_data['mood']}
+    - Energy Level: {mood_data['energy']}/10
+    - Emotional Stability: {mood_data['stability']}/10
+    - Sleep Hours: {mood_data['sleep']}
+    - Stress Level: {mood_data['stress']}/10
+    - Profession: {mood_data.get('profession', 'Not specified')}
+    - Relationship Status: {mood_data.get('relationship', 'Not specified')}
+    - Today's Events: {mood_data.get('events', 'None specified')}
+    - Current Challenges: {mood_data.get('challenges', 'None specified')}
+    
+    ENVIRONMENTAL CONTEXT:
+    - Weather: {weather_data['condition']}, {weather_data['temp']}°C (feels like {weather_data['feels_like']}°C)
+    - High/Low: {weather_data['temp_high']}°C / {weather_data['temp_low']}°C
+    - Description: {weather_data['description']}
+    - Humidity: {weather_data['humidity']}%, Wind: {weather_data['wind_speed']} km/h
+    - UV Index: {weather_data['uv_index']}
+    
+    MOOD HISTORY:
+    {history_summary}
+    Provide a response in this JSON format with CREATIVE, SPECIFIC, and BOLD suggestions:
+    {{
+        "forecast_type": "sunny/cloudy/stormy/energetic/volcanic/serene",
+        "confidence": "percentage like 87%",
+        "weather_description": "Creative one-line emotional weather description",
+        "emotional_temperature": "Like 'Emotional High: 8°C, Low: 3°C, RealFeel: 6°C'",
+        "key_insights": ["Deep insight about their current state", "Pattern observation", "Hidden strength identified"],
+        
+        "professional_suggestions": [
+            "Specific work-related advice based on their profession and current state",
+            "Meeting/deadline management advice", 
+            "Productivity timing recommendations",
+            "Professional relationship advice"
+        ],
+        
+        "personal_life_suggestions": [
+            "Relationship advice (if applicable)",
+            "Social interaction recommendations", 
+            "Self-care activities",
+            "Creative or fun activities based on energy/mood"
+        ],
+        
+        "bold_decisions": [
+            "Specific bold advice like 'Postpone that 3pm meeting - your focus will be scattered'",
+            "Social recommendations like 'Call your partner for lunch - you need connection today'",
+            "Life advice like 'Skip the gym today, do yoga instead - your body needs gentleness'"
+        ],
+        
+        "optimal_timing": [
+            "Best time for important decisions",
+            "Peak energy windows",
+            "Ideal time for social interactions",
+            "When to avoid stressful activities"
+        ],
+        
+        "weather_mood_connection": "How today's weather specifically affects their emotional state",
+        
+        "risk_factors": ["Specific things to watch out for today"],
+        "power_moves": ["Things they should definitely do today to maximize their potential"]
+    }}
+    BE CREATIVE, SPECIFIC, and ACTIONABLE. Don't give generic advice - tailor everything to their profession, relationship status, current mood, and the weather. 
+    Make bold suggestions that could genuinely improve their day. Consider their energy and stability levels carefully.
+    """
+    
     try:
         response = model.generate_content(prompt)
-        text = response.text.strip()
-        # Remove markdown JSON code block if present
-        if text.startswith("```json"):
-            text = text[7:-3].strip()
-        elif text.startswith("```"):
-            text = text[3:-3].strip()
-        return json.loads(text)
+        response_text = response.text.strip()
+        if response_text.startswith('```json'):
+            response_text = response_text[7:-3]
+        elif response_text.startswith('```'):
+            response_text = response_text[3:-3]
+        
+        forecast = json.loads(response_text)
+        return forecast
     except Exception as e:
-        st.warning("⚠️ AI analysis failed, falling back to simple forecast.")
-        return None
+        st.error(f"AI Analysis Error: {e}")
+        return {
+            "forecast_type": "cloudy",
+            "confidence": "75%",
+            "weather_description": "Mixed emotional conditions with potential for clarity",
+            "emotional_temperature": "Emotional High: 6°C, Low: 4°C, RealFeel: 5°C",
+            "key_insights": ["Analysis temporarily unavailable", "Your patterns show resilience"],
+            "professional_suggestions": ["Take regular breaks", "Focus on routine tasks"],
+            "personal_life_suggestions": ["Connect with someone you care about", "Do something that brings you joy"],
+            "bold_decisions": ["Trust your instincts today", "Don't overcommit your energy"],
+            "optimal_timing": ["Morning hours may be best for focus"],
+            "weather_mood_connection": "Weather conditions may be affecting your energy levels",
+            "risk_factors": ["Monitor stress levels throughout the day"],
+            "power_moves": ["One small act of self-care will compound positively"]
+        }
 
-# ------------------------------
-# Generate forecast on button click
-# ------------------------------
-if st.button("🔮 Generate My Emotional Forecast"):
+def save_mood_entry(mood_data):
+    """Save mood entry to session state"""
     entry = {
-        "happiness": happiness,
-        "stress": stress,
-        "energy": energy,
-        "sleep_hours": sleep_hours,
-        "profession": profession,
-        "relationship": relationship,
-        "stressors": stressors,
-        "events": events,
+        **mood_data,
+        'timestamp': datetime.now().isoformat(),
+        'date': datetime.now().strftime('%Y-%m-%d')
     }
-    save_mood_entry()
-    prompt = generate_ai_prompt(entry)
+    st.session_state.mood_history.insert(0, entry)
+    # Keep only last 30 entries
+    st.session_state.mood_history = st.session_state.mood_history[:30]
 
-    with st.spinner("🧠 Analyzing your emotional weather with AI..."):
-        forecast = call_ai_model(prompt)
-
-    # Fallback simple forecast if AI fails
-    if forecast is None:
-        mood_score = (happiness - stress + energy) / 3
-        if mood_score >= 7:
-            forecast = {
-                "forecast_summary": "Bright and sunny emotional skies today! Your positivity shines.",
-                "confidence": "90%",
-                "dos": ["Spend time outside or with loved ones", "Celebrate your small wins", "Practice gratitude"],
-                "donts": ["Avoid overthinking minor problems", "Don't isolate yourself", "Skip toxic conversations"],
-                "bold_moves": ["Initiate a difficult but necessary conversation", "Try a new hobby today"],
-                "emotional_tips": "Use your high energy to start a creative project.",
-                "risk_factors": ["Beware of burnout if you overextend yourself."],
-                "power_moves": ["Take short mindful breaks to recharge."]
-            }
-        elif mood_score >= 4:
-            forecast = {
-                "forecast_summary": "Partly cloudy with moments of calm. Take care of yourself.",
-                "confidence": "75%",
-                "dos": ["Take regular breaks", "Stay hydrated", "Connect with a friend"],
-                "donts": ["Avoid multitasking", "Don't skip meals", "Avoid negative news"],
-                "bold_moves": ["Say no to one non-essential task", "Meditate for 10 minutes"],
-                "emotional_tips": "Focus on small achievable goals to boost mood.",
-                "risk_factors": ["Possible mood dips late afternoon."],
-                "power_moves": ["Gentle exercise can lift your spirits."]
-            }
-        else:
-            forecast = {
-                "forecast_summary": "Emotional rain showers with thunder. It's okay to rest.",
-                "confidence": "70%",
-                "dos": ["Practice deep breathing", "Reach out for support", "Journal your feelings"],
-                "donts": ["Avoid stressful confrontations", "Don't isolate yourself", "Limit caffeine intake"],
-                "bold_moves": ["Take a social media detox for the day", "Try a calming yoga session"],
-                "emotional_tips": "Allow yourself to feel without judgment.",
-                "risk_factors": ["Emotional vulnerability to triggers."],
-                "power_moves": ["Self-compassion exercises will help."]
-            }
-
-    # Display Forecast beautifully
-    st.markdown(f"""
-    <div class="card">
-        <h2 class="center-text">🌤 Emotional Forecast</h2>
-        <p class="center-text" style="font-size:1.2em; font-weight:600;">{forecast['forecast_summary']}</p>
-        <p class="center-text" style="color:#6B7280;">Confidence: {forecast.get('confidence', 'N/A')}</p>
-        
-        <div>
-            <h3 class="suggestion-title">✅ What To Do</h3>
-            <ul>
-                {''.join([f'<li class="dos">{item}</li>' for item in forecast.get('dos', [])])}
-            </ul>
-        </div>
-        
-        <div>
-            <h3 class="suggestion-title">❌ What To Avoid</h3>
-            <ul>
-                {''.join([f'<li class="donts">{item}</li>' for item in forecast.get('donts', [])])}
-            </ul>
-        </div>
-        
-        <div>
-            <h3 class="suggestion-title">⚡ Bold Moves</h3>
-            <ul>
-                {''.join([f'<li class="bold-move">{item}</li>' for item in forecast.get('bold_moves', [])])}
-            </ul>
-        </div>
-        
-        <div>
-            <h3 class="suggestion-title">💡 Emotional Tips</h3>
-            <p>{forecast.get('emotional_tips', '')}</p>
-        </div>
-        
-        <div>
-            <h3 class="suggestion-title">⚠️ Risk Factors</h3>
-            <ul>
-                {''.join([f'<li>{item}</li>' for item in forecast.get('risk_factors', [])])}
-            </ul>
-        </div>
-        
-        <div>
-            <h3 class="suggestion-title">🚀 Power Moves</h3>
-            <ul>
-                {''.join([f'<li>{item}</li>' for item in forecast.get('power_moves', [])])}
-            </ul>
-        </div>
-        
-        <p class="timestamp">Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ------------------------------
-# Mood Reflection & Journaling
-# ------------------------------
-st.subheader("📝 Reflect on your day (optional)")
-note = st.text_area("Write anything about your mood, thoughts, or feelings...", height=120)
-
-if st.button("💾 Save Reflection"):
-    if note.strip():
-        st.session_state.mood_notes.insert(0, {"date": datetime.now().strftime("%Y-%m-%d %H:%M"), "note": note})
-        if len(st.session_state.mood_notes) > 30:
-            st.session_state.mood_notes.pop()
-        st.success("Your reflection was saved 🌱")
-    else:
-        st.warning("Please write something to save your reflection.")
-
-# ------------------------------
-# Mood History Visualization
-# ------------------------------
-if st.session_state.mood_history:
-    st.subheader("📊 Mood Trends Over Time")
+def create_mood_trend_chart():
+    """Create mood trend visualization"""
+    if len(st.session_state.mood_history) < 2:
+        return None
+    
     df = pd.DataFrame(st.session_state.mood_history)
-    df['datetime'] = pd.to_datetime(df['timestamp'])
-    df = df.sort_values('datetime')
-    df['mood_score'] = (df['happiness'] - df['stress'] + df['energy']) / 3
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.sort_values('date')
+    
+    # Calculate overall mood score
+    df['mood_score'] = (df['energy'] + df['stability'] + (10 - df['stress'])) / 3
+    df['energy_trend'] = df['energy']
+    df['stability_trend'] = df['stability']
+    
+    fig = px.line(df, x='date', y=['mood_score', 'energy_trend', 'stability_trend'], 
+                  title='Your Emotional Weather Trends',
+                  labels={'value': 'Score (1-10)', 'date': 'Date', 'variable': 'Metric'},
+                  color_discrete_map={
+                      'mood_score': '#FF6B6B',
+                      'energy_trend': '#4ECDC4', 
+                      'stability_trend': '#45B7D1'
+                  })
+    fig.update_layout(height=400, legend=dict(orientation="h", yanchor="bottom", y=1.02))
+    return fig
 
-    chart = alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X('datetime:T', title='Date & Time'),
-        y=alt.Y('mood_score:Q', title='Mood Score (0-10)', scale=alt.Scale(domain=[0, 10])),
-        tooltip=[
-            alt.Tooltip('datetime:T', title='Timestamp'),
-            alt.Tooltip('happiness:Q'),
-            alt.Tooltip('stress:Q'),
-            alt.Tooltip('energy:Q'),
-            alt.Tooltip('mood_score:Q', format='.2f')
-        ]
-    ).properties(width=700, height=300)
+# Main App
+def main():
+    # Custom container for centered content
+    with st.container():
+        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+        
+        # Header with minimalistic design
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem;">🌤️ MoodCast</h1>
+            <p style="font-size: 1.1rem; color: #666;">Your personal emotional weather forecast</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Get current weather
+        weather_data = get_weather_data()
+        
+        # Main content in two columns
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            # Input card
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown('<div class="section-header"><span class="icon">📝</span> How are you feeling today?</div>', unsafe_allow_html=True)
+            
+            # Mood selection with visual options
+            mood_options = {
+                'energetic': '⚡ Energetic',
+                'calm': '☁️ Calm', 
+                'happy': '☀️ Happy',
+                'anxious': '🌧️ Anxious',
+                'tired': '🌙 Tired',
+                'focused': '☕ Focused',
+                'creative': '🎨 Creative',
+                'overwhelmed': '🌪️ Overwhelmed'
+            }
+            
+            # Create a grid of mood options
+            selected_mood = st.selectbox(
+                "Select your current mood", 
+                options=list(mood_options.keys()),
+                format_func=lambda x: mood_options[x],
+                key="mood_select"
+            )
+            
+            # Core metrics with sliders
+            energy_level = st.slider("Energy Level", 1, 10, 5, key="energy")
+            stability = st.slider("Emotional Stability", 1, 10, 5, key="stability")
+            stress_level = st.slider("Stress Level", 1, 10, 3, key="stress")
+            sleep_hours = st.number_input("Hours of sleep", 0.0, 12.0, 7.0, step=0.5, key="sleep")
+            
+            # Context information in an expander
+            with st.expander("Add context (optional)", expanded=False):
+                profession = st.selectbox("Your Profession", [
+                    "Student", "Software Developer", "Teacher", "Healthcare Worker", 
+                    "Manager/Executive", "Creative Professional", "Sales/Marketing", 
+                    "Entrepreneur", "Consultant", "Engineer", "Freelancer", "Other"
+                ], key="profession")
+                
+                relationship = st.selectbox("Relationship Status", [
+                    "Single", "In a relationship", "Married", "It's complicated", "Prefer not to say"
+                ], key="relationship")
+                
+                events = st.text_area("Today's events/schedule", 
+                                     placeholder="e.g., Important presentation at 2pm, dinner date...", key="events")
+                
+                challenges = st.text_area("Current challenges", 
+                                         placeholder="e.g., Deadline stress, relationship issues...", key="challenges")
+            
+            # Generate button with custom styling
+            if st.button("🔮 Generate My Forecast", type="primary", key="generate_btn"):
+                mood_data = {
+                    'mood': selected_mood,
+                    'energy': energy_level,
+                    'stability': stability,
+                    'sleep': sleep_hours,
+                    'stress': stress_level,
+                    'profession': profession,
+                    'relationship': relationship,
+                    'events': events,
+                    'challenges': challenges
+                }
+                
+                with st.spinner("🧠 Analyzing your emotional patterns..."):
+                    forecast = generate_ai_forecast(mood_data, weather_data, st.session_state.mood_history)
+                    save_mood_entry(mood_data)
+                    st.session_state.current_forecast = forecast
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with col2:
+            # Forecast display
+            if st.session_state.current_forecast:
+                forecast = st.session_state.current_forecast
+                
+                # Weather icons mapping
+                weather_icons = {
+                    'sunny': '☀️',
+                    'cloudy': '☁️', 
+                    'stormy': '⛈️',
+                    'energetic': '⚡',
+                    'volcanic': '🌋',
+                    'serene': '🌅'
+                }
+                
+                icon = weather_icons.get(forecast['forecast_type'], '🌤️')
+                
+                # Main forecast card
+                st.markdown(f"""
+                <div class="forecast-card">
+                    <h1 style="font-size: 3em; margin: 0;">{icon}</h1>
+                    <h2 style="margin: 10px 0; font-weight: 300;">{forecast['weather_description']}</h2>
+                    <p style="font-size: 1em; margin: 5px 0; opacity: 0.9;">{forecast.get('emotional_temperature', '')}</p>
+                    <p style="font-size: 0.9em; margin: 5px 0; opacity: 0.8;">Confidence: {forecast['confidence']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Weather-mood connection
+                if 'weather_mood_connection' in forecast:
+                    st.markdown(f"""
+                    <div class="forecast-item">
+                        <div class="forecast-item-title"><span class="icon">🌡️</span> Weather Impact</div>
+                        <p>{forecast['weather_mood_connection']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Key insights
+                st.markdown('<div class="forecast-item">', unsafe_allow_html=True)
+                st.markdown('<div class="forecast-item-title"><span class="icon">🔍</span> Key Insights</div>', unsafe_allow_html=True)
+                for insight in forecast['key_insights']:
+                    st.markdown(f"• {insight}")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Professional suggestions
+                if 'professional_suggestions' in forecast:
+                    st.markdown('<div class="forecast-item">', unsafe_allow_html=True)
+                    st.markdown('<div class="forecast-item-title"><span class="icon">💼</span> Professional Advice</div>', unsafe_allow_html=True)
+                    for suggestion in forecast['professional_suggestions']:
+                        st.markdown(f"• {suggestion}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Personal life suggestions
+                if 'personal_life_suggestions' in forecast:
+                    st.markdown('<div class="forecast-item">', unsafe_allow_html=True)
+                    st.markdown('<div class="forecast-item-title"><span class="icon">❤️</span> Personal Life</div>', unsafe_allow_html=True)
+                    for suggestion in forecast['personal_life_suggestions']:
+                        st.markdown(f"• {suggestion}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Bold decisions
+                if 'bold_decisions' in forecast:
+                    st.markdown('<div class="forecast-item" style="background-color: #fff8e1;">', unsafe_allow_html=True)
+                    st.markdown('<div class="forecast-item-title"><span class="icon">⚡</span> Bold Moves</div>', unsafe_allow_html=True)
+                    for decision in forecast['bold_decisions']:
+                        st.markdown(f"• {decision}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Optimal timing
+                if 'optimal_timing' in forecast:
+                    st.markdown('<div class="forecast-item">', unsafe_allow_html=True)
+                    st.markdown('<div class="forecast-item-title"><span class="icon">⏰</span> Perfect Timing</div>', unsafe_allow_html=True)
+                    for timing in forecast['optimal_timing']:
+                        st.markdown(f"• {timing}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Power moves
+                if 'power_moves' in forecast:
+                    st.markdown('<div class="forecast-item" style="background-color: #e8f5e9;">', unsafe_allow_html=True)
+                    st.markdown('<div class="forecast-item-title"><span class="icon">🚀</span> Power Moves</div>', unsafe_allow_html=True)
+                    for move in forecast['power_moves']:
+                        st.markdown(f"• {move}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Risk factors
+                if forecast.get('risk_factors'):
+                    st.markdown('<div class="forecast-item" style="background-color: #ffebee;">', unsafe_allow_html=True)
+                    st.markdown('<div class="forecast-item-title"><span class="icon">⚠️</span> Watch Out For</div>', unsafe_allow_html=True)
+                    for risk in forecast['risk_factors']:
+                        st.markdown(f"• {risk}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+            
+            else:
+                # Placeholder when no forecast is generated
+                st.markdown('<div class="card" style="text-align: center; padding: 2rem;">', unsafe_allow_html=True)
+                st.markdown("""
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✨</div>
+                <h3>Your personalized forecast awaits</h3>
+                <p style="color: #666; margin-top: 1rem;">Complete your check-in to receive AI-powered insights tailored to your emotional state.</p>
+                """, unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Mood trend chart
+        if st.session_state.mood_history:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+            st.markdown('<div class="section-header"><span class="icon">📈</span> Your Emotional Trends</div>', unsafe_allow_html=True)
+            chart = create_mood_trend_chart()
+            if chart:
+                st.plotly_chart(chart, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Footer
+        st.markdown("""
+        <div class="footer">
+            <p>MoodCast — Your AI Emotional Weather Companion</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">For serious mental health concerns, please consult professionals</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.altair_chart(chart, use_container_width=True)
-
-# ------------------------------
-# Display Recent Reflections
-# ------------------------------
-if st.session_state.mood_notes:
-    st.subheader("🗒️ Recent Reflections")
-    for note in st.session_state.mood_notes[:5]:
-        st.markdown(f"*{note['date']}*: {note['note']}")
-
-# ------------------------------
-# Footer with disclaimer
-# ------------------------------
-st.markdown("""
-<div style="text-align:center; color:#9CA3AF; margin-top:40px; font-size:0.9em;">
-    <em>⚠️ MoodCast AI is a wellness tool for self-awareness and not a replacement for professional mental health support.</em>
-</div>
-""", unsafe_allow_html=True)
+if __name__ == "__main__":
+    main()
