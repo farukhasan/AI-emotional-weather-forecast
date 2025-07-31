@@ -14,97 +14,121 @@ st.set_page_config(
     layout="centered"
 )
 
-# Clean Apple-like CSS
+# Clean Apple-like CSS with visible fonts
 st.markdown("""
 <style>
-    body {
-        background-color: #ffffff;
-    }
-    .main-title {
-        font-size: 2.5rem;
-        font-weight: 600;
-        text-align: center;
-        color: #1d1d1f;
-        margin-bottom: 0.5rem;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-    }
-    .subtitle {
-        font-size: 1.2rem;
-        text-align: center;
-        color: #86868b;
-        margin-bottom: 3rem;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-    }
-    .decision-card {
-        background: #007aff;
-        border-radius: 16px;
-        padding: 2rem;
-        color: white;
-        text-align: center;
-        margin: 2rem 0;
-        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15);
-    }
-    .recommendation {
-        background: #f2f2f7;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        color: #1d1d1f;
-        border: 1px solid #d1d1d6;
-    }
-    .do-item {
-        background: #d1f2eb;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        color: #1d1d1f;
-        font-weight: 500;
-        border-left: 3px solid #30d158;
-    }
-    .dont-item {
-        background: #ffe6e6;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        color: #1d1d1f;
-        font-weight: 500;
-        border-left: 3px solid #ff3b30;
-    }
-    .stButton > button {
-        width: 100%;
-        background: #007aff;
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 1rem;
-        font-weight: 600;
-        font-size: 1rem;
-        margin-top: 1.5rem;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    .input-section {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 2rem;
-        margin: 1.5rem 0;
-        border: 1px solid #d1d1d6;
-    }
-    .weather-card {
-        background: #f2f2f7;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        color: #1d1d1f;
-        text-align: center;
-        border: 1px solid #d1d1d6;
-    }
-    /* Override Streamlit's default background */
+    /* Force white background */
     .stApp {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
     }
     .main .block-container {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
         padding-top: 2rem;
+    }
+    
+    /* Main title styling */
+    .main-title {
+        font-size: 2.5rem !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        color: #000000 !important;
+        margin-bottom: 0.5rem !important;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
+    }
+    
+    /* Subtitle styling */
+    .subtitle {
+        font-size: 1.2rem !important;
+        text-align: center !important;
+        color: #666666 !important;
+        margin-bottom: 3rem !important;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif !important;
+    }
+    
+    /* Decision card */
+    .decision-card {
+        background: #007aff !important;
+        border-radius: 16px !important;
+        padding: 2rem !important;
+        color: white !important;
+        text-align: center !important;
+        margin: 2rem 0 !important;
+        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15) !important;
+    }
+    
+    /* Recommendation boxes */
+    .recommendation {
+        background: #f8f9fa !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        margin: 1rem 0 !important;
+        color: #000000 !important;
+        border: 1px solid #dee2e6 !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Do items (green) */
+    .do-item {
+        background: #d4edda !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin: 0.5rem 0 !important;
+        color: #000000 !important;
+        font-weight: 500 !important;
+        border-left: 3px solid #28a745 !important;
+    }
+    
+    /* Don't items (red) */
+    .dont-item {
+        background: #f8d7da !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+        margin: 0.5rem 0 !important;
+        color: #000000 !important;
+        font-weight: 500 !important;
+        border-left: 3px solid #dc3545 !important;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        width: 100% !important;
+        background: #007aff !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 1rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        margin-top: 1.5rem !important;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+    
+    /* Weather card */
+    .weather-card {
+        background: #f8f9fa !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        margin: 1rem 0 !important;
+        color: #000000 !important;
+        text-align: center !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    /* Override all text to be visible */
+    h1, h2, h3, h4, h5, h6, p, div, span, label {
+        color: #000000 !important;
+    }
+    
+    /* Streamlit specific overrides */
+    .stMarkdown, .stText {
+        color: #000000 !important;
+    }
+    
+    /* Section headers */
+    .main h3 {
+        color: #000000 !important;
+        font-weight: 600 !important;
+        margin-bottom: 1rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -353,7 +377,7 @@ def main():
     )
     
     # Analysis button
-    if st.button("🤖 Get My Personalized Recommendation", type="primary"):
+    if st.button("Get My Personalized Recommendation", type="primary"):
         data = {
             'mood': mood,
             'energy': energy,
@@ -367,7 +391,7 @@ def main():
             'support': support
         }
         
-        with st.spinner("🧠 AI is analyzing your situation..."):
+        with st.spinner("Analyzing your situation..."):
             time.sleep(1.5)
             analysis = analyze_leave_decision(data, weather)
             
@@ -404,30 +428,29 @@ def main():
             
             if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
                 with col1:
-                    st.markdown("**✅ Recovery Activities:**")
+                    st.markdown("**Recovery Activities:**")
                     for item in analysis.get('leave_activities', []):
-                        st.markdown(f'<div class="do-item">🌱 {item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="do-item">{item}</div>', unsafe_allow_html=True)
                 
                 with col2:
-                    st.markdown("**❌ Avoid During Leave:**")
+                    st.markdown("**Avoid During Leave:**")
                     for item in analysis.get('leave_avoid', []):
-                        st.markdown(f'<div class="dont-item">⚠️ {item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="dont-item">{item}</div>', unsafe_allow_html=True)
             else:
                 with col1:
-                    st.markdown("**✅ If You Work Tomorrow:**")
+                    st.markdown("**If You Work Tomorrow:**")
                     for item in analysis.get('work_activities', []):
-                        st.markdown(f'<div class="do-item">💼 {item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="do-item">{item}</div>', unsafe_allow_html=True)
                 
                 with col2:
-                    st.markdown("**❌ Avoid While Working:**")
+                    st.markdown("**Avoid While Working:**")
                     for item in analysis.get('work_avoid', []):
-                        st.markdown(f'<div class="dont-item">⚠️ {item}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="dont-item">{item}</div>', unsafe_allow_html=True)
             
-            # Warning signs
             if analysis.get('warning_signs'):
                 st.markdown(f"""
                 <div class="recommendation">
-                    <strong>🚨 Watch for these warning signs:</strong><br>
+                    <strong>Watch for these warning signs:</strong><br>
                     {' • '.join(analysis['warning_signs'])}
                 </div>
                 """, unsafe_allow_html=True)
@@ -436,38 +459,15 @@ def main():
             if analysis.get('recovery_estimate'):
                 st.markdown(f"""
                 <div class="recommendation">
-                    <strong>⏰ Expected recovery time:</strong> {analysis['recovery_estimate']}
+                    <strong>Expected recovery time:</strong> {analysis['recovery_estimate']}
                 </div>
                 """, unsafe_allow_html=True)
     
-    # Trend visualization
-    if len(st.session_state.assessments) >= 2:
-        st.markdown("---")
-        chart = create_wellness_trend()
-        if chart:
-            st.plotly_chart(chart, use_container_width=True)
-        
-        # Insights
-        recent_scores = [a['wellness_score'] for a in st.session_state.assessments[:7]]
-        avg_score = sum(recent_scores) / len(recent_scores)
-        
-        if avg_score >= 70:
-            trend_msg = "📈 Excellent wellness trend!"
-        elif avg_score >= 50:
-            trend_msg = "📊 Stable wellness - room for improvement"
-        else:
-            trend_msg = "📉 Concerning trend - prioritize self-care"
-        
-        st.info(f"**Recent Average:** {avg_score:.0f}/100 • {trend_msg}")
-
-if __name__ == "__main__":
-    main()
-
-# Footer
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #7f8c8d; font-size: 0.9rem; padding: 1.5rem;">
-    💙 <strong>Your wellbeing matters.</strong> This tool provides guidance, not medical advice.<br>
-    For serious mental health concerns, please consult a healthcare professional.
-</div>
-""", unsafe_allow_html=True)
+    # Footer
+    st.markdown("---")
+    st.markdown("""
+    <div style="text-align: center; color: #86868b; font-size: 0.9rem; padding: 1.5rem;">
+        <strong>Your wellbeing matters.</strong> This tool provides guidance, not medical advice.<br>
+        For serious mental health concerns, please consult a healthcare professional.
+    </div>
+    """, unsafe_allow_html=True)
