@@ -14,108 +14,97 @@ st.set_page_config(
     layout="centered"
 )
 
-# Improved CSS with better visibility
+# Clean Apple-like CSS
 st.markdown("""
 <style>
+    body {
+        background-color: #ffffff;
+    }
     .main-title {
         font-size: 2.5rem;
-        font-weight: 300;
+        font-weight: 600;
         text-align: center;
-        color: #2c3e50;
+        color: #1d1d1f;
         margin-bottom: 0.5rem;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
     }
     .subtitle {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         text-align: center;
-        color: #7f8c8d;
-        margin-bottom: 2rem;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #86868b;
+        margin-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
     }
     .decision-card {
-        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        border-radius: 20px;
-        padding: 2.5rem;
+        background: #007aff;
+        border-radius: 16px;
+        padding: 2rem;
         color: white;
         text-align: center;
         margin: 2rem 0;
-        box-shadow: 0 10px 40px rgba(116, 185, 255, 0.3);
-    }
-    .wellness-score {
-        font-size: 3.5rem;
-        font-weight: 200;
-        margin: 1rem 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15);
     }
     .recommendation {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 15px;
-        padding: 1.8rem;
-        margin: 1.5rem 0;
-        border-left: 5px solid #74b9ff;
-        color: #2c3e50;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        background: #f2f2f7;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        color: #1d1d1f;
+        border: 1px solid #d1d1d6;
     }
     .do-item {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        border-radius: 12px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        border-left: 4px solid #28a745;
-        color: #155724;
+        background: #d1f2eb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: #1d1d1f;
         font-weight: 500;
-    }
-    .maybe-item {
-        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-        border-radius: 12px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        border-left: 4px solid #ffc107;
-        color: #856404;
-        font-weight: 500;
+        border-left: 3px solid #30d158;
     }
     .dont-item {
-        background: linear-gradient(135deg, #f8d7da 0%, #f1c0c7 100%);
-        border-radius: 12px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        border-left: 4px solid #dc3545;
-        color: #721c24;
+        background: #ffe6e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: #1d1d1f;
         font-weight: 500;
+        border-left: 3px solid #ff3b30;
     }
     .stButton > button {
         width: 100%;
-        background: linear-gradient(90deg, #74b9ff 0%, #0984e3 100%);
+        background: #007aff;
         color: white;
         border: none;
-        border-radius: 15px;
+        border-radius: 12px;
         padding: 1rem;
         font-weight: 600;
-        font-size: 1.1rem;
+        font-size: 1rem;
         margin-top: 1.5rem;
-        box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
-        transition: all 0.3s ease;
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(116, 185, 255, 0.4);
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     }
     .input-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-radius: 20px;
-        padding: 2.5rem;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 2rem;
         margin: 1.5rem 0;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        border: 1px solid #e9ecef;
+        border: 1px solid #d1d1d6;
     }
     .weather-card {
-        background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 100%);
-        border-radius: 15px;
+        background: #f2f2f7;
+        border-radius: 12px;
         padding: 1.5rem;
         margin: 1rem 0;
-        color: #2c3e50;
+        color: #1d1d1f;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(127, 205, 205, 0.2);
+        border: 1px solid #d1d1d6;
+    }
+    /* Override Streamlit's default background */
+    .stApp {
+        background-color: #ffffff;
+    }
+    .main .block-container {
+        background-color: #ffffff;
+        padding-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -185,7 +174,7 @@ DECISION FRAMEWORK:
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
-    "wellness_score": 45,
+    "wellness_score": 65,
     "leave_type": "full_day_leave",
     "confidence": 82,
     "main_reason": "Primary reason for recommendation",
@@ -315,8 +304,8 @@ def main():
     # Weather display
     st.markdown(f'''
     <div class="weather-card">
-        <h3 style="margin: 0; color: #2c3e50;">🌤️ Tomorrow's Weather</h3>
-        <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #2c3e50;">
+        <h3 style="margin: 0; color: #1d1d1f; font-weight: 600;">Tomorrow's Weather</h3>
+        <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #1d1d1f;">
             <strong>{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
             {weather['condition']} • {weather['rain_chance']}% chance of rain
         </p>
@@ -324,7 +313,6 @@ def main():
     ''', unsafe_allow_html=True)
     
     # Input section
-    st.markdown('<div class="input-section">', unsafe_allow_html=True)
     st.markdown("### How are you feeling today?")
     
     col1, col2 = st.columns(2)
@@ -363,8 +351,6 @@ def main():
         "Your support system",
         ["Strong - great family/friend support", "Good - some supportive people", "Limited - few people to talk to", "Weak - feeling quite isolated"]
     )
-    
-    st.markdown('</div>', unsafe_allow_html=True)
     
     # Analysis button
     if st.button("🤖 Get My Personalized Recommendation", type="primary"):
@@ -406,12 +392,10 @@ def main():
             decision_text, decision_color = leave_type_map.get(analysis['leave_type'], ("Work With Care", "#74b9ff"))
             
             st.markdown(f"""
-            <div class="decision-card" style="background: linear-gradient(135deg, {decision_color}dd 0%, {decision_color} 100%);">
-                <h2 style="margin: 0; font-weight: 300;">AI Recommendation</h2>
-                <div class="wellness-score">{analysis['wellness_score']}/100</div>
-                <h3 style="margin: 0.5rem 0; font-weight: 400;">{decision_text}</h3>
-                <p style="font-size: 1.1rem; opacity: 0.95; margin: 1rem 0;">{analysis['decision_summary']}</p>
-                <p style="font-size: 0.9rem; opacity: 0.8;">Confidence: {analysis['confidence']}% • {analysis['main_reason']}</p>
+            <div class="decision-card">
+                <h2 style="margin: 0; font-weight: 600;">{decision_text}</h2>
+                <p style="font-size: 1.1rem; opacity: 0.9; margin: 1rem 0;">{analysis['decision_summary']}</p>
+                <p style="font-size: 0.9rem; opacity: 0.8;">Confidence: {analysis['confidence']}%</p>
             </div>
             """, unsafe_allow_html=True)
             
