@@ -281,10 +281,67 @@ def main():
     # Get tomorrow's weather
     weather = get_weather_tomorrow()
     
-    # Weather display with inline styles
+    # Weather display with inline styles and animation
+    # Determine weather icon and animation based on condition
+    weather_condition_lower = weather['condition'].lower()
+    if 'rain' in weather_condition_lower or 'shower' in weather_condition_lower:
+        weather_icon = "🌧️"
+        animation_class = "rain-animation"
+    elif 'cloud' in weather_condition_lower:
+        weather_icon = "☁️"
+        animation_class = "cloud-animation"
+    elif 'sun' in weather_condition_lower or 'clear' in weather_condition_lower:
+        weather_icon = "☀️"
+        animation_class = "sun-animation"
+    else:
+        weather_icon = "🌤️"
+        animation_class = "default-animation"
+    
     st.markdown(f'''
+    <style>
+        @keyframes rain-drop {{
+            0% {{ transform: translateY(-5px); opacity: 0.7; }}
+            50% {{ transform: translateY(2px); opacity: 1; }}
+            100% {{ transform: translateY(-5px); opacity: 0.7; }}
+        }}
+        
+        @keyframes cloud-drift {{
+            0% {{ transform: translateX(-3px); }}
+            50% {{ transform: translateX(3px); }}
+            100% {{ transform: translateX(-3px); }}
+        }}
+        
+        @keyframes sun-glow {{
+            0% {{ transform: scale(1); opacity: 0.8; }}
+            50% {{ transform: scale(1.05); opacity: 1; }}
+            100% {{ transform: scale(1); opacity: 0.8; }}
+        }}
+        
+        @keyframes gentle-float {{
+            0% {{ transform: translateY(-2px); }}
+            50% {{ transform: translateY(2px); }}
+            100% {{ transform: translateY(-2px); }}
+        }}
+        
+        .rain-animation {{
+            animation: rain-drop 2s ease-in-out infinite;
+        }}
+        
+        .cloud-animation {{
+            animation: cloud-drift 4s ease-in-out infinite;
+        }}
+        
+        .sun-animation {{
+            animation: sun-glow 3s ease-in-out infinite;
+        }}
+        
+        .default-animation {{
+            animation: gentle-float 3s ease-in-out infinite;
+        }}
+    </style>
     <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; text-align: center; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
         <h3 style="margin: 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Weather</h3>
+        <div style="font-size: 2rem; margin: 0.5rem 0;" class="{animation_class}">{weather_icon}</div>
         <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
             <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
             {weather['condition']} • {weather['rain_chance']}% chance of rain
