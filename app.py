@@ -103,6 +103,23 @@ st.markdown("""
         margin-top: 1.5rem;
         font-family: 'Lexend Deca', sans-serif;
     }
+    
+    /* Fix for input labels to be black */
+    .stSelectbox label,
+    .stSlider label,
+    .stSelectbox > div > label,
+    .stSlider > div > label,
+    label[data-testid="stWidgetLabel"] {
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Additional targeting for labels */
+    .stSelectbox > label,
+    .stSlider > label {
+        color: #1a1a1a !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
