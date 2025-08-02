@@ -327,13 +327,7 @@ def main():
     
     # Get tomorrow's weather and traffic
     weather = get_weather_tomorrow()
-    
-    # Debug: Let's see if traffic function works
-    with st.spinner("Checking traffic conditions..."):
-        traffic = get_traffic_disruptions()
-    
-    # Debug: Show what we got
-    st.write("Debug - Traffic data:", traffic)
+    traffic = get_traffic_disruptions()
     
     # Weather display with inline styles and animation
     # Determine weather icon and animation based on condition
@@ -399,26 +393,6 @@ def main():
         <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
             <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
             {weather['condition']} • {weather['rain_chance']}% chance of rain
-        </p>
-    </div>
-    ''', unsafe_allow_html=True)
-    
-    # Traffic disruption card
-    disruption_colors = {
-        "low": "#d4edda",
-        "medium": "#fff3cd", 
-        "high": "#f8d7da"
-    }
-    
-    disruption_color = disruption_colors.get(traffic['disruption_level'], "#f8f9fa")
-    
-    st.markdown(f'''
-    <div style="background: {disruption_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
-        <h4 style="margin: 0 0 0.5rem 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Traffic Situation</h4>
-        <p style="font-size: 0.9rem; margin: 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
-            <strong>Disruption Level:</strong> {traffic['disruption_level'].title()}<br>
-            <strong>Potential Issues:</strong> {', '.join(traffic['movements'])}<br>
-            <strong>Advice:</strong> {traffic['commute_advice']}
         </p>
     </div>
     ''', unsafe_allow_html=True)
@@ -583,4 +557,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
