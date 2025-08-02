@@ -14,65 +14,119 @@ st.set_page_config(
     layout="centered"
 )
 
-# Minimal modern CSS with soft gradients and clean typography
+# Beautiful modern CSS with dark theme and neon accents
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
     
     .stApp {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+        font-family: 'Space Grotesk', sans-serif;
+        color: #e2e8f0;
     }
     
-    .main-container {
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 2rem 1rem;
+    /* Animated background particles */
+    .stApp::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(119, 198, 255, 0.1) 0%, transparent 50%);
+        animation: particleFloat 20s ease-in-out infinite;
+        pointer-events: none;
+        z-index: -1;
     }
     
-    .hero-section {
-        text-align: center;
-        margin-bottom: 3rem;
-        padding: 2rem 0;
+    @keyframes particleFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        33% { transform: translateY(-20px) rotate(120deg); }
+        66% { transform: translateY(10px) rotate(240deg); }
     }
     
     .main-title {
-        font-size: 2.25rem;
+        font-size: 3rem;
         font-weight: 700;
-        color: #0f172a;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 0.5rem;
-        letter-spacing: -0.025em;
-        line-height: 1.2;
+        text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+    
+    @keyframes titleGlow {
+        from { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.3)); }
+        to { filter: drop-shadow(0 0 30px rgba(102, 126, 234, 0.6)); }
     }
     
     .subtitle {
-        font-size: 1rem;
-        color: #64748b;
-        margin-bottom: 0;
+        font-size: 1.2rem;
+        text-align: center;
+        color: #94a3b8;
+        margin-bottom: 3rem;
         font-weight: 400;
     }
     
-    .glass-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    .neon-card {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .neon-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
     }
     
     .weather-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         text-align: center;
-        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
     }
     
-    .weather-icon {
-        font-size: 2.5rem;
-        margin: 0.5rem 0;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    .weather-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: rotate 10s linear infinite;
+        pointer-events: none;
+    }
+    
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
     
     .decision-card {
@@ -80,67 +134,101 @@ st.markdown("""
         color: white;
         text-align: center;
         margin: 2rem 0;
-        padding: 2.5rem 2rem;
+        position: relative;
+        overflow: hidden;
     }
     
-    .decision-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    .decision-card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5, #ffbe0b, #ff006e);
+        border-radius: inherit;
+        animation: borderGlow 3s linear infinite;
+        z-index: -1;
+    }
+    
+    @keyframes borderGlow {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+    
+    .wellness-meter {
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        position: relative;
+    }
+    
+    .wellness-bar {
+        width: 100%;
+        height: 20px;
+        background: rgba(30, 41, 59, 0.8);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .wellness-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+        border-radius: 10px;
+        transition: width 2s ease-out;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .recommendation-pill {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        margin: 0.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        border: 1px solid;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        cursor: default;
     }
     
     .pill-positive {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        border-radius: 24px;
-        padding: 0.75rem 1.25rem;
-        margin: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border: none;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        background: rgba(16, 185, 129, 0.2);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #6ee7b7;
+    }
+    
+    .pill-positive:hover {
+        background: rgba(16, 185, 129, 0.3);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
     }
     
     .pill-negative {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        border-radius: 24px;
-        padding: 0.75rem 1.25rem;
-        margin: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        border: none;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
     }
     
-    .info-card {
-        background: rgba(255, 255, 255, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        border-radius: 12px;
-        padding: 1.25rem;
+    .pill-negative:hover {
+        background: rgba(239, 68, 68, 0.3);
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .mood-emoji {
+        font-size: 3rem;
         margin: 1rem 0;
-        color: #334155;
+        animation: bounce 2s infinite;
     }
     
-    .section-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #0f172a;
-        margin-bottom: 1rem;
-        letter-spacing: -0.01em;
-    }
-    
-    /* Streamlit component styling */
-    .stSelectbox > div > div {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(148, 163, 184, 0.3);
-        border-radius: 8px;
-    }
-    
-    .stSlider > div > div {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 8px;
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
     }
     
     .stButton > button {
@@ -148,67 +236,124 @@ st.markdown("""
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        border-radius: 12px;
-        padding: 0.875rem 1.5rem;
+        border-radius: 15px;
+        padding: 1rem 2rem;
         font-weight: 600;
-        font-size: 1rem;
-        margin-top: 1.5rem;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        transition: all 0.2s ease;
+        font-size: 1.1rem;
+        margin-top: 2rem;
+        font-family: 'Space Grotesk', sans-serif;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
     
     .stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
     }
     
-    /* Labels styling */
+    .stButton > button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .stButton > button:hover::before {
+        left: 100%;
+    }
+    
+    /* Streamlit component styling */
+    .stSelectbox > div > div,
+    .stSlider > div > div {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+    }
+    
     .stSelectbox label,
     .stSlider label,
     label[data-testid="stWidgetLabel"] {
-        color: #374151 !important;
-        font-family: 'Inter', sans-serif !important;
+        color: #e2e8f0 !important;
+        font-family: 'Space Grotesk', sans-serif !important;
         font-weight: 500 !important;
-        font-size: 0.875rem !important;
-        margin-bottom: 0.5rem !important;
+        font-size: 1rem !important;
     }
     
-    /* Animations */
-    @keyframes gentle-float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-3px); }
+    /* Progress indicator */
+    .progress-dots {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 2rem 0;
     }
     
-    @keyframes fade-in {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(59, 130, 246, 0.3);
+        animation: pulse 2s infinite;
     }
     
-    .floating-animation {
-        animation: gentle-float 3s ease-in-out infinite;
+    .dot.active {
+        background: #3b82f6;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
     }
     
-    .fade-in {
-        animation: fade-in 0.6s ease-out;
+    @keyframes pulse {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+    
+    /* AI thinking animation */
+    .ai-thinking {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #8b5cf6;
+        font-weight: 500;
+    }
+    
+    .thinking-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #8b5cf6;
+        animation: thinkingPulse 1.4s infinite;
+    }
+    
+    .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes thinkingPulse {
+        0%, 60%, 100% { transform: scale(0.8); opacity: 0.5; }
+        30% { transform: scale(1.2); opacity: 1; }
     }
     
     /* Custom scrollbar */
     ::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
     }
     
     ::-webkit-scrollbar-track {
-        background: rgba(148, 163, 184, 0.1);
-        border-radius: 3px;
+        background: rgba(15, 23, 42, 0.8);
     }
     
     ::-webkit-scrollbar-thumb {
-        background: rgba(148, 163, 184, 0.4);
-        border-radius: 3px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 4px;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-        background: rgba(148, 163, 184, 0.6);
+        background: linear-gradient(135deg, #764ba2, #667eea);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -216,6 +361,8 @@ st.markdown("""
 # Initialize session state
 if 'assessments' not in st.session_state:
     st.session_state.assessments = []
+if 'step' not in st.session_state:
+    st.session_state.step = 0
 
 # API Configuration
 try:
@@ -251,17 +398,32 @@ def get_weather_tomorrow():
         "rain_chance": 20
     }
 
-def get_weather_icon(condition):
-    """Get appropriate weather icon and animation"""
-    condition_lower = condition.lower()
-    if 'rain' in condition_lower or 'shower' in condition_lower:
-        return "🌧️"
-    elif 'cloud' in condition_lower:
-        return "☁️"
-    elif 'sun' in condition_lower or 'clear' in condition_lower:
-        return "☀️"
-    else:
-        return "🌤️"
+def get_mood_emoji(mood):
+    """Get emoji based on mood"""
+    mood_map = {
+        "Excellent": "😊",
+        "Good": "🙂", 
+        "Okay": "😐",
+        "Struggling": "😔",
+        "Overwhelmed": "😰",
+        "Exhausted": "😴"
+    }
+    return mood_map.get(mood, "🙂")
+
+def create_wellness_meter(score):
+    """Create an animated wellness meter"""
+    color = "red" if score < 40 else "orange" if score < 70 else "green"
+    return f"""
+    <div class="wellness-meter">
+        <h4 style="margin: 0 0 1rem 0; color: #e2e8f0; text-align: center;">Wellness Score: {score}/100</h4>
+        <div class="wellness-bar">
+            <div class="wellness-fill" style="width: {score}%;"></div>
+        </div>
+        <div style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: #94a3b8;">
+            {'🔴 Critical' if score < 25 else '🟡 Needs Care' if score < 50 else '🟢 Good' if score < 75 else '✨ Excellent'}
+        </div>
+    </div>
+    """
 
 def analyze_leave_decision(data, weather):
     """Enhanced AI analysis for leave recommendation"""
@@ -376,38 +538,53 @@ Weather considerations:
         }
 
 def main():
-    # Hero section
+    # Animated header
     st.markdown('''
-    <div class="hero-section">
-        <h1 class="main-title">Should I Take Leave Tomorrow?</h1>
-        <p class="subtitle">AI-powered guidance for your work-life balance</p>
+    <h1 class="main-title">Should I Take Leave Tomorrow?</h1>
+    <p class="subtitle">✨ AI-powered decision making for your work-life balance</p>
+    ''', unsafe_allow_html=True)
+    
+    # Progress indicator
+    st.markdown('''
+    <div class="progress-dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
     </div>
     ''', unsafe_allow_html=True)
     
     # Get tomorrow's weather
     weather = get_weather_tomorrow()
-    weather_icon = get_weather_icon(weather['condition'])
     
-    # Weather card
+    # Weather display with rotating border animation
+    weather_condition_lower = weather['condition'].lower()
+    if 'rain' in weather_condition_lower or 'shower' in weather_condition_lower:
+        weather_icon = "🌧️"
+    elif 'cloud' in weather_condition_lower:
+        weather_icon = "☁️"
+    elif 'sun' in weather_condition_lower or 'clear' in weather_condition_lower:
+        weather_icon = "☀️"
+    else:
+        weather_icon = "🌤️"
+    
     st.markdown(f'''
-    <div class="glass-card weather-card">
-        <h3 style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 1.125rem;">Tomorrow's Weather</h3>
-        <div class="weather-icon floating-animation">{weather_icon}</div>
-        <div style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem;">
+    <div class="neon-card weather-card">
+        <h3 style="margin: 0 0 1rem 0; font-weight: 600; z-index: 2; position: relative;">Tomorrow's Weather</h3>
+        <div style="font-size: 3rem; margin: 1rem 0; z-index: 2; position: relative;">{weather_icon}</div>
+        <div style="font-size: 1.3rem; font-weight: 600; margin: 0.5rem 0; z-index: 2; position: relative;">
             {weather['temp_high']}°C / {weather['temp_low']}°C
         </div>
-        <div style="opacity: 0.9; font-size: 0.9rem;">
+        <div style="opacity: 0.9; font-size: 1rem; z-index: 2; position: relative;">
             {weather['condition']} • {weather['rain_chance']}% chance of rain
         </div>
     </div>
     ''', unsafe_allow_html=True)
     
-    # Input section
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown('<h3 class="section-title">How are you feeling today?</h3>', unsafe_allow_html=True)
+    # Input section with neon cards
+    st.markdown('<div class="neon-card">', unsafe_allow_html=True)
+    st.markdown('<h3 style="color: #e2e8f0; font-weight: 600; margin-bottom: 1.5rem;">How are you feeling today?</h3>', unsafe_allow_html=True)
     
-    # Create a more minimal form layout
-    col1, col2 = st.columns([1, 1], gap="medium")
+    col1, col2 = st.columns(2)
     
     with col1:
         mood = st.selectbox(
@@ -416,45 +593,41 @@ def main():
             help="How would you describe your general state today?"
         )
         
+        # Display mood emoji
+        st.markdown(f'<div class="mood-emoji" style="text-align: center;">{get_mood_emoji(mood)}</div>', unsafe_allow_html=True)
+        
         energy = st.slider("Energy level", 1, 10, 5, help="1 = Completely drained, 10 = Highly energized")
         stress = st.slider("Current stress", 1, 10, 5, help="1 = Very relaxed, 10 = Extremely stressed")
+        sleep = st.slider("Last night's sleep quality", 1, 10, 6, help="1 = Terrible, 10 = Perfect rest")
         
     with col2:
-        sleep = st.slider("Sleep quality", 1, 10, 6, help="1 = Terrible, 10 = Perfect rest")
-        work_pressure = st.slider("Work pressure", 1, 10, 5, help="1 = Very light, 10 = Overwhelming")
-        personal_stress = st.slider("Personal stress", 1, 10, 4, help="1 = Very peaceful, 10 = Major issues")
-    
-    # Additional inputs in a cleaner layout
-    st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-    
-    col3, col4 = st.columns(2)
-    with col3:
+        work_pressure = st.slider("Work pressure level", 1, 10, 5, help="1 = Very light, 10 = Overwhelming")
+        personal_stress = st.slider("Personal life stress", 1, 10, 4, help="1 = Very peaceful, 10 = Major issues")
+        
         physical_symptoms = st.selectbox(
             "Physical symptoms",
             ["None", "Mild tension/headache", "Moderate discomfort", "Severe symptoms"]
         )
         
         last_break = st.selectbox(
-            "Last day off",
-            ["Within last month", "1-2 months ago", "2-6 months ago", "6+ months ago", "Never"]
+            "When did you last take a day off?",
+            ["Never", "6+ months ago", "2-6 months ago", "1-2 months ago", "Within last month"]
         )
     
-    with col4:
-        tomorrow_importance = st.selectbox(
-            "Tomorrow's work priority",
-            ["Low - routine tasks", "Medium - some important items", "High - major deadlines", "Critical - cannot be postponed"]
-        )
-        
-        support = st.selectbox(
-            "Support system",
-            ["Strong support network", "Good support", "Limited support", "Feeling isolated"]
-        )
+    tomorrow_importance = st.selectbox(
+        "How critical is tomorrow's work?",
+        ["Low priority - routine tasks", "Medium - some important items", "High - major deadlines", "Critical - cannot be postponed"]
+    )
+    
+    support = st.selectbox(
+        "Your support system",
+        ["Strong - great family/friend support", "Good - some supportive people", "Limited - few people to talk to", "Weak - feeling quite isolated"]
+    )
     
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Analysis button
-    if st.button("✨ Get My Personalized Recommendation", type="primary"):
+    # Analysis button with hover effects
+    if st.button("🚀 Analyze My Situation with AI", type="primary"):
         data = {
             'mood': mood,
             'energy': energy,
@@ -468,98 +641,66 @@ def main():
             'support': support
         }
         
-        with st.spinner("Analyzing your situation..."):
-            time.sleep(1.5)
-            analysis = analyze_leave_decision(data, weather)
-            
-            # Save assessment
-            entry = {
-                **data,
-                'date': datetime.now().strftime('%Y-%m-%d'),
-                'wellness_score': analysis['wellness_score'],
-                'recommendation': analysis['leave_type']
-            }
-            st.session_state.assessments.insert(0, entry)
-            st.session_state.assessments = st.session_state.assessments[:30]
-            
-            # Display results with fade-in animation
-            leave_type_map = {
-                "full_day_leave": "Take Full Day Off",
-                "half_day_leave": "Take Half Day / Leave Early", 
-                "work_with_care": "Work With Extra Self-Care",
-                "work_normally": "Work Normally"
-            }
-            
-            decision_text = leave_type_map.get(analysis['leave_type'], "Work With Care")
-            
-            # Decision card
-            st.markdown(f'''
-            <div class="glass-card decision-card fade-in">
-                <div class="decision-title">{decision_text}</div>
-                <p style="font-size: 1rem; opacity: 0.95; margin: 0.5rem 0; line-height: 1.5;">{analysis['decision_summary']}</p>
-                <div style="font-size: 0.875rem; opacity: 0.8; margin-top: 1rem;">
-                    Wellness Score: {analysis['wellness_score']}/100 • Confidence: {analysis['confidence']}%
-                </div>
+        # AI thinking animation
+        thinking_placeholder = st.empty()
+        thinking_placeholder.markdown('''
+        <div style="text-align: center; padding: 2rem;">
+            <div class="ai-thinking">
+                🤖 AI is analyzing your situation
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
             </div>
-            ''', unsafe_allow_html=True)
-            
-            # Recommendations in minimal cards
-            col1, col2 = st.columns(2, gap="medium")
-            
-            if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
-                with col1:
-                    st.markdown('<div class="glass-card fade-in">', unsafe_allow_html=True)
-                    st.markdown('<div class="section-title">💚 Recovery Activities</div>', unsafe_allow_html=True)
-                    for item in analysis.get('leave_activities', []):
-                        st.markdown(f'<div class="pill-positive">{item}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                
-                with col2:
-                    st.markdown('<div class="glass-card fade-in">', unsafe_allow_html=True)
-                    st.markdown('<div class="section-title">❌ Avoid During Leave</div>', unsafe_allow_html=True)
-                    for item in analysis.get('leave_avoid', []):
-                        st.markdown(f'<div class="pill-negative">{item}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-            else:
-                with col1:
-                    st.markdown('<div class="glass-card fade-in">', unsafe_allow_html=True)
-                    st.markdown('<div class="section-title">💚 If Working Tomorrow</div>', unsafe_allow_html=True)
-                    for item in analysis.get('work_activities', []):
-                        st.markdown(f'<div class="pill-positive">{item}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                
-                with col2:
-                    st.markdown('<div class="glass-card fade-in">', unsafe_allow_html=True)
-                    st.markdown('<div class="section-title">❌ Avoid While Working</div>', unsafe_allow_html=True)
-                    for item in analysis.get('work_avoid', []):
-                        st.markdown(f'<div class="pill-negative">{item}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Additional info cards
-            if analysis.get('warning_signs'):
-                st.markdown(f'''
-                <div class="info-card fade-in">
-                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #dc2626;">⚠️ Watch for these signs:</div>
-                    <div style="font-size: 0.9rem; line-height: 1.4;">{' • '.join(analysis['warning_signs'])}</div>
-                </div>
-                ''', unsafe_allow_html=True)
-            
-            if analysis.get('recovery_estimate'):
-                st.markdown(f'''
-                <div class="info-card fade-in">
-                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #059669;">⏰ Recovery timeframe:</div>
-                    <div style="font-size: 0.9rem;">{analysis['recovery_estimate']}</div>
-                </div>
-                ''', unsafe_allow_html=True)
-    
-    # Minimal footer
-    st.markdown("---")
-    st.markdown('''
-    <div style="text-align: center; color: #64748b; font-size: 0.875rem; padding: 1.5rem 0; line-height: 1.6;">
-        <strong>Your wellbeing matters.</strong><br>
-        This tool provides guidance, not medical advice. For serious concerns, consult a healthcare professional.
-    </div>
-    ''', unsafe_allow_html=True)
-
-if __name__ == "__main__":
-    main()
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        time.sleep(2)
+        thinking_placeholder.empty()
+        
+        analysis = analyze_leave_decision(data, weather)
+        
+        # Save assessment
+        entry = {
+            **data,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'wellness_score': analysis['wellness_score'],
+            'recommendation': analysis['leave_type']
+        }
+        st.session_state.assessments.insert(0, entry)
+        st.session_state.assessments = st.session_state.assessments[:30]
+        
+        # Wellness meter
+        st.markdown(create_wellness_meter(analysis['wellness_score']), unsafe_allow_html=True)
+        
+        # Display results with animated border
+        leave_type_map = {
+            "full_day_leave": ("🏠 Take Full Day Off", "🔴"),
+            "half_day_leave": ("⏰ Take Half Day / Leave Early", "🟡"),
+            "work_with_care": ("⚠️ Work With Extra Self-Care", "🟠"),
+            "work_normally": ("💼 Work Normally", "🟢")
+        }
+        
+        decision_text, status_icon = leave_type_map.get(analysis['leave_type'], ("Work With Care", "🟡"))
+        
+        # Decision card with glowing border
+        st.markdown(f'''
+        <div class="neon-card decision-card">
+            <h2 style="margin: 0; font-weight: 700; font-size: 1.8rem; z-index: 2; position: relative;">{decision_text}</h2>
+            <div style="font-size: 2rem; margin: 1rem 0; z-index: 2; position: relative;">{status_icon}</div>
+            <p style="font-size: 1.1rem; opacity: 0.95; margin: 1rem 0; line-height: 1.6; z-index: 2; position: relative;">{analysis['decision_summary']}</p>
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 1.5rem; z-index: 2; position: relative;">
+                Confidence: {analysis['confidence']}% | Reason: {analysis['main_reason']}
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Recommendations with hover effects
+        col1, col2 = st.columns(2)
+        
+        if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
+            with col1:
+                st.markdown('<div class="neon-card">', unsafe_allow_html=True)
+                st.markdown('<h4 style="color: #6ee7b7; margin-bottom: 1rem;">🌱 Recovery Activities</h4>', unsafe_allow_html=True)
+                for item in analysis.get('leave_activities', []):
+                    st.markdown(f'<div class="recommendation-pill pill-positive">{item}</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
