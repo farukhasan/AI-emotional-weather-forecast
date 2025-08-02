@@ -327,7 +327,13 @@ def main():
     
     # Get tomorrow's weather and traffic
     weather = get_weather_tomorrow()
-    traffic = get_traffic_disruptions()
+    
+    # Debug: Let's see if traffic function works
+    with st.spinner("Checking traffic conditions..."):
+        traffic = get_traffic_disruptions()
+    
+    # Debug: Show what we got
+    st.write("Debug - Traffic data:", traffic)
     
     # Weather display with inline styles and animation
     # Determine weather icon and animation based on condition
