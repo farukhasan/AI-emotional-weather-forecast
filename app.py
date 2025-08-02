@@ -417,6 +417,26 @@ def main():
     </div>
     ''', unsafe_allow_html=True)
     
+    # Traffic disruption card
+    disruption_colors = {
+        "low": "#d4edda",
+        "medium": "#fff3cd", 
+        "high": "#f8d7da"
+    }
+    
+    disruption_color = disruption_colors.get(traffic['disruption_level'], "#f8f9fa")
+    
+    st.markdown(f'''
+    <div style="background: {disruption_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Traffic Situation</h4>
+        <p style="font-size: 0.9rem; margin: 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
+            <strong>Disruption Level:</strong> {traffic['disruption_level'].title()}<br>
+            <strong>Potential Issues:</strong> {', '.join(traffic['movements'])}<br>
+            <strong>Advice:</strong> {traffic['commute_advice']}
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+    
     # Input section header
     st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">How are you feeling today?</h3>', unsafe_allow_html=True)
     
