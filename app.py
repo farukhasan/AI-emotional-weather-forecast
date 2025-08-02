@@ -161,6 +161,47 @@ def get_weather_tomorrow():
         "rain_chance": 20
     }
 
+def get_traffic_disruptions():
+    """Analyze potential traffic disruptions for tomorrow using AI"""
+    try:
+        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        prompt = f"""Analyze potential traffic disruptions in Dhaka, Bangladesh for {tomorrow}. Consider:
+
+1. Political movements, protests, or strikes
+2. Major events or religious observances  
+3. Regular traffic patterns for this day of week
+4. Construction or infrastructure work
+5. Any ongoing political tensions
+
+Respond in EXACT JSON format:
+{{
+    "disruption_level": "low/medium/high",
+    "movements": ["List max 3 potential disruptions"],
+    "traffic_impact": "Brief impact description",
+    "commute_advice": "Short advice for commuters"
+}}
+
+Base your analysis on typical patterns in Dhaka and current political climate. If uncertain, default to "low" disruption."""
+
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        if response_text.startswith('```json'):
+            response_text = response_text.replace('```json', '').replace('```', '').strip()
+        
+        result = json.loads(response_text)
+        return result
+        
+    except Exception as e:
+        # Fallback with minimal disruption
+        return {
+            "disruption_level": "low",
+            "movements": ["Regular weekday traffic"],
+            "traffic_impact": "Normal congestion expected",
+            "commute_advice": "Allow standard commute time"
+        }
+
 def analyze_leave_decision(data, weather):
     """Enhanced AI analysis for leave recommendation"""
     
