@@ -73,13 +73,16 @@ if st.button("🔍 Analyze & Decide"):
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown(f"<div class='result-card' style='background: white; border-radius: 16px; padding: 1.5rem; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 16px;'>
-        {analysis}
-        </div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class='result-card' style='background: white; border-radius: 16px; padding: 1.5rem; 
+            color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.05); font-size: 16px;'>
+                {analysis}
+            </div>
+        """, unsafe_allow_html=True)
 
         # Extracting and showing a mock wellness score from the output (ideally parse more accurately)
         import re
-        match = re.search(r'(\\d{1,3})\\s*[%]?', analysis)
+        match = re.search(r'(\d{1,3})\s*[%]?', analysis)
         if match:
             score = int(match.group(1))
             if 0 <= score <= 100:
