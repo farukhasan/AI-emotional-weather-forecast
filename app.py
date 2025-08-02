@@ -161,51 +161,7 @@ def get_weather_tomorrow():
         "rain_chance": 20
     }
 
-def get_traffic_disruptions():
-    """Get actual movements and events for tomorrow using AI web search capabilities"""
-    try:
-        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%B %d, %Y')
-        today = datetime.now().strftime('%B %d, %Y')
-        
-        prompt = f"""Search and analyze actual scheduled events, movements, protests, strikes, or political activities in Dhaka, Bangladesh for tomorrow ({tomorrow}). 
-
-Look for:
-1. Scheduled political rallies or protests
-2. Student movements or strikes
-3. Transport strikes or hartals
-4. Religious events or processions
-5. Major construction or road closures
-6. Any announced movements by political parties
-
-If you find actual scheduled events, list them. If no specific events are found, indicate normal traffic conditions.
-
-Respond in EXACT JSON format:
-{{
-    "has_movements": true/false,
-    "movements": ["List actual scheduled movements/events for tomorrow, max 3"],
-    "traffic_likely": true/false
-}}
-
-Be specific about tomorrow's date: {tomorrow}. Only include confirmed or likely events."""
-
-        response = model.generate_content(prompt)
-        response_text = response.text.strip()
-        
-        if response_text.startswith('```json'):
-            response_text = response_text.replace('```json', '').replace('```', '').strip()
-        
-        result = json.loads(response_text)
-        return result
-        
-    except Exception as e:
-        # Fallback - no specific movements found
-        return {
-            "has_movements": False,
-            "movements": ["No specific movements scheduled"],
-            "traffic_likely": False
-        }
-
-def analyze_leave_decision(data, weather, traffic):
+def analyze_leave_decision(data, weather):
     """Enhanced AI analysis for leave recommendation"""
     
     prompt = f"""You are an intelligent work-life balance advisor. Analyze if this person should take leave tomorrow based on their mental state, workload, and external factors.
@@ -224,15 +180,11 @@ CURRENT STATE:
 
 WEATHER TOMORROW: {weather['temp_high']}°C/{weather['temp_low']}°C, {weather['condition']}, {weather['rain_chance']}% rain chance
 
-TRAFFIC SITUATION: {'Movements expected' if traffic['has_movements'] else 'No major movements'}
-- Tomorrow's events: {', '.join(traffic['movements'])}
-- Traffic disruption likely: {'Yes' if traffic['traffic_likely'] else 'No'}
-
 DECISION FRAMEWORK:
 - Full Day Leave: For burnout, severe stress, or mental health crisis
 - Half Day/Early Leave: For moderate stress with manageable work
 - Work Normally: For good mental state with support strategies
-- Movement impact: If movements + high stress = consider avoiding commute stress
+- Consider weather impact on mood and recovery opportunities
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
@@ -240,30 +192,28 @@ Respond in this EXACT JSON format (ensure valid JSON):
     "leave_type": "full_day_leave",
     "confidence": 82,
     "main_reason": "Primary reason for recommendation",
-    "decision_summary": "Brief 2-sentence explanation including any traffic/weather factors",
+    "decision_summary": "Brief 2-sentence explanation of the decision",
     "work_activities": ["3 things to do if working"],
     "work_avoid": ["3 things to avoid if working"],
     "leave_activities": ["4 recovery activities for leave day"],
     "leave_avoid": ["3 things to avoid during leave"],
     "warning_signs": ["signs requiring immediate attention"],
-    "recovery_estimate": "Expected recovery timeframe",
-    "traffic_factor": "How traffic situation influenced the decision (if at all)"
+    "recovery_estimate": "Expected recovery timeframe"
 }}
 
 Leave types: "full_day_leave", "half_day_leave", "work_with_care", "work_normally"
 
 SCORING GUIDE:
 - 80-100: Excellent state, work normally
-- 60-79: Good state, minor support needed  
+- 60-79: Good state, minor support needed
 - 40-59: Moderate stress, consider half day
 - 20-39: High stress, likely needs full day
 - 0-19: Crisis level, definitely needs leave
 
-Traffic considerations:
-- High disruption + high stress = stronger leave recommendation
-- Medium disruption = minor factor in decision  
-- Low disruption = negligible impact
-- Political movements or strikes may increase commute stress and energy drain"""
+Weather considerations:
+- Rainy/gloomy: May worsen mood, indoor recovery activities
+- Sunny/pleasant: Good for outdoor recovery, mood boost
+- Extreme weather: Affects commute stress and recovery options"""
 
     try:
         response = model.generate_content(prompt)
@@ -320,8 +270,7 @@ Traffic considerations:
             "leave_activities": ["Sleep until naturally awake", "Light exercise or walk", "Do something you enjoy", "Connect with supportive people"],
             "leave_avoid": ["Checking work emails", "Intensive physical activities", "Making major decisions"],
             "warning_signs": ["Panic attacks", "Complete inability to focus", "Persistent physical symptoms"],
-            "recovery_estimate": "1-3 days with proper rest",
-            "traffic_factor": f"Movements expected: {traffic['has_movements']} - {'Minor impact on decision' if traffic['traffic_likely'] else 'No impact'}"
+            "recovery_estimate": "1-3 days with proper rest"
         }
 
 def main():
@@ -329,15 +278,8 @@ def main():
     st.markdown('<h1 style="font-size: 2.5rem; font-weight: 600; text-align: center; color: #1a1a1a; margin-bottom: 0.5rem; font-family: Lexend Deca, sans-serif;">Should I Take Leave Tomorrow?</h1>', unsafe_allow_html=True)
     st.markdown('<p style="font-size: 1.2rem; text-align: center; color: #666; margin-bottom: 3rem; font-family: Lexend Deca, sans-serif;">AI-powered decision making for your work-life balance</p>', unsafe_allow_html=True)
     
-    # Get tomorrow's weather and traffic
+    # Get tomorrow's weather
     weather = get_weather_tomorrow()
-    
-    # Debug: Let's see if traffic function works
-    with st.spinner("Checking traffic conditions..."):
-        traffic = get_traffic_disruptions()
-    
-    # Debug: Show what we got
-    st.write("Debug - Traffic data:", traffic)
     
     # Weather display with inline styles and animation
     # Determine weather icon and animation based on condition
@@ -407,44 +349,6 @@ def main():
     </div>
     ''', unsafe_allow_html=True)
     
-    # Traffic disruption card
-    if traffic['has_movements']:
-        card_color = "#fff3cd"  # Yellow for movements
-        traffic_text = "There may be traffic!"
-    else:
-        card_color = "#d4edda"  # Green for normal
-        traffic_text = "Normal conditions expected"
-    
-    st.markdown(f'''
-    <div style="background: {card_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
-        <h4 style="margin: 0 0 0.5rem 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Movements</h4>
-        <p style="font-size: 0.9rem; margin: 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
-            <strong>{traffic_text}</strong><br>
-            {', '.join(traffic['movements'])}
-        </p>
-    </div>
-    ''', unsafe_allow_html=True)
-    
-    # Traffic disruption card
-    disruption_colors = {
-        "low": "#d4edda",
-        "medium": "#fff3cd", 
-        "high": "#f8d7da"
-    }
-    
-    disruption_color = disruption_colors.get(traffic['disruption_level'], "#f8f9fa")
-    
-    st.markdown(f'''
-    <div style="background: {disruption_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
-        <h4 style="margin: 0 0 0.5rem 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Traffic Situation</h4>
-        <p style="font-size: 0.9rem; margin: 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
-            <strong>Disruption Level:</strong> {traffic['disruption_level'].title()}<br>
-            <strong>Potential Issues:</strong> {', '.join(traffic['movements'])}<br>
-            <strong>Advice:</strong> {traffic['commute_advice']}
-        </p>
-    </div>
-    ''', unsafe_allow_html=True)
-    
     # Input section header
     st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">How are you feeling today?</h3>', unsafe_allow_html=True)
     
@@ -502,7 +406,7 @@ def main():
         
         with st.spinner("Analyzing your situation..."):
             time.sleep(1.5)
-            analysis = analyze_leave_decision(data, weather, traffic)
+            analysis = analyze_leave_decision(data, weather)
             
             # Save assessment
             entry = {
@@ -530,7 +434,6 @@ def main():
                 <h2 style="margin: 0; font-weight: 600; color: white; font-family: Lexend Deca, sans-serif;">{decision_text}</h2>
                 <p style="font-size: 1.1rem; opacity: 0.9; margin: 1rem 0; color: white; font-family: Lexend Deca, sans-serif;">{analysis['decision_summary']}</p>
                 <p style="font-size: 0.9rem; opacity: 0.8; color: white; font-family: Lexend Deca, sans-serif;">Confidence: {analysis['confidence']}%</p>
-                {f'<p style="font-size: 0.85rem; opacity: 0.7; color: white; font-family: Lexend Deca, sans-serif; font-style: italic;">Traffic factor: {analysis.get("traffic_factor", "Not considered")}</p>' if analysis.get("traffic_factor") else ''}
             </div>
             """, unsafe_allow_html=True)
             
