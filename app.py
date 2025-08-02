@@ -162,25 +162,31 @@ def get_weather_tomorrow():
     }
 
 def get_traffic_disruptions():
-    """Analyze potential traffic disruptions for tomorrow using AI"""
+    """Get actual movements and events for tomorrow using AI web search capabilities"""
     try:
-        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%B %d, %Y')
+        today = datetime.now().strftime('%B %d, %Y')
         
-        prompt = f"""Analyze potential traffic disruptions in Dhaka, Bangladesh for {tomorrow}. Consider:
+        prompt = f"""Search and analyze actual scheduled events, movements, protests, strikes, or political activities in Dhaka, Bangladesh for tomorrow ({tomorrow}). 
 
-1. Political movements, protests, or strikes
-2. Major events or religious observances  
-3. Regular traffic patterns for this day of week
-4. Construction or infrastructure work
-5. Any ongoing political tensions
+Look for:
+1. Scheduled political rallies or protests
+2. Student movements or strikes
+3. Transport strikes or hartals
+4. Religious events or processions
+5. Major construction or road closures
+6. Any announced movements by political parties
+
+If you find actual scheduled events, list them. If no specific events are found, indicate normal traffic conditions.
 
 Respond in EXACT JSON format:
 {{
-    "disruption_level": "low/medium/high",
-    "movements": ["List max 3 potential disruptions or movements"]
+    "has_movements": true/false,
+    "movements": ["List actual scheduled movements/events for tomorrow, max 3"],
+    "traffic_likely": true/false
 }}
 
-Base your analysis on typical patterns in Dhaka and current political climate. If uncertain, default to "low" disruption."""
+Be specific about tomorrow's date: {tomorrow}. Only include confirmed or likely events."""
 
         response = model.generate_content(prompt)
         response_text = response.text.strip()
@@ -192,10 +198,11 @@ Base your analysis on typical patterns in Dhaka and current political climate. I
         return result
         
     except Exception as e:
-        # Fallback with minimal disruption
+        # Fallback - no specific movements found
         return {
-            "disruption_level": "low",
-            "movements": ["Regular weekday traffic"]
+            "has_movements": False,
+            "movements": ["No specific movements scheduled"],
+            "traffic_likely": False
         }
 
 def analyze_leave_decision(data, weather, traffic):
@@ -217,14 +224,15 @@ CURRENT STATE:
 
 WEATHER TOMORROW: {weather['temp_high']}°C/{weather['temp_low']}°C, {weather['condition']}, {weather['rain_chance']}% rain chance
 
-TRAFFIC SITUATION: {traffic['disruption_level']} disruption level
-- Movements: {', '.join(traffic['movements'])}
+TRAFFIC SITUATION: {'Movements expected' if traffic['has_movements'] else 'No major movements'}
+- Tomorrow's events: {', '.join(traffic['movements'])}
+- Traffic disruption likely: {'Yes' if traffic['traffic_likely'] else 'No'}
 
 DECISION FRAMEWORK:
 - Full Day Leave: For burnout, severe stress, or mental health crisis
 - Half Day/Early Leave: For moderate stress with manageable work
 - Work Normally: For good mental state with support strategies
-- Traffic impact: High disruption + existing stress = stronger leave recommendation; Medium disruption = minor factor; Low disruption = negligible impact
+- Movement impact: If movements + high stress = consider avoiding commute stress
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
@@ -253,8 +261,9 @@ SCORING GUIDE:
 
 Traffic considerations:
 - High disruption + high stress = stronger leave recommendation
-- Medium disruption = factor into commute planning  
-- Low disruption = minimal impact on decision"""
+- Medium disruption = minor factor in decision  
+- Low disruption = negligible impact
+- Political movements or strikes may increase commute stress and energy drain"""
 
     try:
         response = model.generate_content(prompt)
@@ -312,7 +321,7 @@ Traffic considerations:
             "leave_avoid": ["Checking work emails", "Intensive physical activities", "Making major decisions"],
             "warning_signs": ["Panic attacks", "Complete inability to focus", "Persistent physical symptoms"],
             "recovery_estimate": "1-3 days with proper rest",
-            "traffic_factor": f"Traffic disruption level: {traffic['disruption_level']} - minimal impact on decision"
+            "traffic_factor": f"Movements expected: {traffic['has_movements']} - {'Minor impact on decision' if traffic['traffic_likely'] else 'No impact'}"
         }
 
 def main():
@@ -399,20 +408,19 @@ def main():
     ''', unsafe_allow_html=True)
     
     # Traffic disruption card
-    disruption_colors = {
-        "low": "#d4edda",
-        "medium": "#fff3cd", 
-        "high": "#f8d7da"
-    }
-    
-    disruption_color = disruption_colors.get(traffic['disruption_level'], "#f8f9fa")
+    if traffic['has_movements']:
+        card_color = "#fff3cd"  # Yellow for movements
+        traffic_text = "There may be traffic!"
+    else:
+        card_color = "#d4edda"  # Green for normal
+        traffic_text = "Normal conditions expected"
     
     st.markdown(f'''
-    <div style="background: {disruption_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
+    <div style="background: {card_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
         <h4 style="margin: 0 0 0.5rem 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Movements</h4>
         <p style="font-size: 0.9rem; margin: 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
-            <strong>Level:</strong> {traffic['disruption_level'].title()}<br>
-            <strong>Expected:</strong> {', '.join(traffic['movements'])}
+            <strong>{traffic_text}</strong><br>
+            {', '.join(traffic['movements'])}
         </p>
     </div>
     ''', unsafe_allow_html=True)
