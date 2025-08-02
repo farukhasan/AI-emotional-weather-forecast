@@ -177,9 +177,7 @@ def get_traffic_disruptions():
 Respond in EXACT JSON format:
 {{
     "disruption_level": "low/medium/high",
-    "movements": ["List max 3 potential disruptions"],
-    "traffic_impact": "Brief impact description",
-    "commute_advice": "Short advice for commuters"
+    "movements": ["List max 3 potential disruptions or movements"]
 }}
 
 Base your analysis on typical patterns in Dhaka and current political climate. If uncertain, default to "low" disruption."""
@@ -197,9 +195,7 @@ Base your analysis on typical patterns in Dhaka and current political climate. I
         # Fallback with minimal disruption
         return {
             "disruption_level": "low",
-            "movements": ["Regular weekday traffic"],
-            "traffic_impact": "Normal congestion expected",
-            "commute_advice": "Allow standard commute time"
+            "movements": ["Regular weekday traffic"]
         }
 
 def analyze_leave_decision(data, weather, traffic):
@@ -222,14 +218,13 @@ CURRENT STATE:
 WEATHER TOMORROW: {weather['temp_high']}°C/{weather['temp_low']}°C, {weather['condition']}, {weather['rain_chance']}% rain chance
 
 TRAFFIC SITUATION: {traffic['disruption_level']} disruption level
-- Potential issues: {', '.join(traffic['movements'])}
-- Impact: {traffic['traffic_impact']}
+- Movements: {', '.join(traffic['movements'])}
 
 DECISION FRAMEWORK:
 - Full Day Leave: For burnout, severe stress, or mental health crisis
 - Half Day/Early Leave: For moderate stress with manageable work
 - Work Normally: For good mental state with support strategies
-- Consider weather and traffic impact on commute stress and energy
+- Traffic impact: High disruption + existing stress = stronger leave recommendation; Medium disruption = minor factor; Low disruption = negligible impact
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
@@ -327,7 +322,13 @@ def main():
     
     # Get tomorrow's weather and traffic
     weather = get_weather_tomorrow()
-    traffic = get_traffic_disruptions()
+    
+    # Debug: Let's see if traffic function works
+    with st.spinner("Checking traffic conditions..."):
+        traffic = get_traffic_disruptions()
+    
+    # Debug: Show what we got
+    st.write("Debug - Traffic data:", traffic)
     
     # Weather display with inline styles and animation
     # Determine weather icon and animation based on condition
@@ -393,6 +394,25 @@ def main():
         <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
             <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
             {weather['condition']} • {weather['rain_chance']}% chance of rain
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    # Traffic disruption card
+    disruption_colors = {
+        "low": "#d4edda",
+        "medium": "#fff3cd", 
+        "high": "#f8d7da"
+    }
+    
+    disruption_color = disruption_colors.get(traffic['disruption_level'], "#f8f9fa")
+    
+    st.markdown(f'''
+    <div style="background: {disruption_color}; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Movements</h4>
+        <p style="font-size: 0.9rem; margin: 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
+            <strong>Level:</strong> {traffic['disruption_level'].title()}<br>
+            <strong>Expected:</strong> {', '.join(traffic['movements'])}
         </p>
     </div>
     ''', unsafe_allow_html=True)
