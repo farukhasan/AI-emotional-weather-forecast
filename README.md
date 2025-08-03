@@ -2,6 +2,9 @@
 
 An AI-powered Streamlit app that helps you decide whether to take a day off work based on your mental health and stress levels.
 
+LINK: https://leaveittoai.streamlit.app/
+
+
 ## How It Works
 
 The app uses Google Gemini 1.5 Flash to analyze your current wellness state and provide personalized leave recommendations. The AI considers your mood, energy, stress levels, sleep quality, work pressure, and tomorrow's weather to make informed suggestions.
@@ -31,3 +34,4 @@ The AI prioritizes your mental health by recognizing that taking time off when n
 Built with Google Gemini 1.5 Flash model, the AI analyzes wellness patterns and provides structured recommendations with confidence scores. Includes fallback logic for reliability.
 
 Weather data is integrated from Pirate Weather API to factor environmental conditions into decision-making.
+
