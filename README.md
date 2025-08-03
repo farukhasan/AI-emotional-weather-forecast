@@ -29,9 +29,10 @@ The AI analyzes your responses using a comprehensive wellness framework that wei
 
 The AI prioritizes your mental health by recognizing that taking time off when needed prevents burnout, improves long-term productivity, and maintains overall wellbeing. It understands that pushing through exhaustion or high stress often leads to worse outcomes than taking proactive rest.
 
-## AI Technology
+## AI
 
 Built with Google Gemini 1.5 Flash model, the AI analyzes wellness patterns and provides structured recommendations with confidence scores. Includes fallback logic for reliability.
 
 Weather data is integrated from Pirate Weather API to factor environmental conditions into decision-making.
+
 
