@@ -6,7 +6,6 @@ import requests
 from datetime import datetime, timedelta
 import json
 import time
-import pyperclip
 
 # Page config
 st.set_page_config(
@@ -574,17 +573,78 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # Copy button
+                    # Copy button with JavaScript implementation
                     col1, col2, col3 = st.columns([1, 1, 1])
                     with col2:
-                        if st.button("📋 Copy Email", type="secondary"):
-                            # Use JavaScript to copy to clipboard
-                            st.markdown(f"""
-                            <script>
-                                navigator.clipboard.writeText(`{st.session_state.generated_email.replace('`', '\\`')}`);
-                            </script>
-                            """, unsafe_allow_html=True)
-                            st.success("Email copied to clipboard!")
+                        # Create a unique ID for this email
+                        email_id = f"email_{int(time.time())}"
+                        
+                        # Display the copy button with JavaScript
+                        st.markdown(f"""
+                        <div style="text-align: center; margin: 1rem 0;">
+                            <button onclick="copyEmailToClipboard()" style="background: #28a745; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; font-family: 'Lexend Deca', sans-serif; font-weight: 600;">
+                                📋 Copy Email
+                            </button>
+                            <div id="copy-status" style="margin-top: 0.5rem; color: #28a745; font-weight: 500; opacity: 0; transition: opacity 0.3s;"></div>
+                        </div>
+                        
+                        <script>
+                        function copyEmailToClipboard() {{
+                            const emailText = `{st.session_state.generated_email.replace('`', '\\`').replace(chr(10), '\\n').replace(chr(13), '')}`;
+                            
+                            if (navigator.clipboard && window.isSecureContext) {{
+                                navigator.clipboard.writeText(emailText).then(function() {{
+                                    showCopySuccess();
+                                }}, function(err) {{
+                                    fallbackCopyTextToClipboard(emailText);
+                                }});
+                            }} else {{
+                                fallbackCopyTextToClipboard(emailText);
+                            }}
+                        }}
+                        
+                        function fallbackCopyTextToClipboard(text) {{
+                            const textArea = document.createElement("textarea");
+                            textArea.value = text;
+                            textArea.style.top = "0";
+                            textArea.style.left = "0";
+                            textArea.style.position = "fixed";
+                            
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            
+                            try {{
+                                document.execCommand('copy');
+                                showCopySuccess();
+                            }} catch (err) {{
+                                showCopyError();
+                            }}
+                            
+                            document.body.removeChild(textArea);
+                        }}
+                        
+                        function showCopySuccess() {{
+                            const status = document.getElementById('copy-status');
+                            status.textContent = '✅ Email copied to clipboard!';
+                            status.style.opacity = '1';
+                            setTimeout(function() {{
+                                status.style.opacity = '0';
+                            }}, 3000);
+                        }}
+                        
+                        function showCopyError() {{
+                            const status = document.getElementById('copy-status');
+                            status.textContent = '❌ Copy failed - please select and copy manually';
+                            status.style.color = '#dc3545';
+                            status.style.opacity = '1';
+                            setTimeout(function() {{
+                                status.style.opacity = '0';
+                                status.style.color = '#28a745';
+                            }}, 4000);
+                        }}
+                        </script>
+                        """, unsafe_allow_html=True)
             
             # Recommendations based on decision
             col1, col2 = st.columns(2)
