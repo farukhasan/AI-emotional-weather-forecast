@@ -175,91 +175,51 @@ def get_weather_tomorrow():
     }
 
 def generate_leave_email():
-    """Generate a believable leave email with random excuse"""
+    """Generate a believable leave email using AI"""
     
     excuses_pool = [
-        {
-            "reason": "food poisoning",
-            "details": "severe food poisoning from last night's dinner",
-            "symptoms": "nausea and stomach cramps"
-        },
-        {
-            "reason": "gastroenteritis",
-            "details": "sudden onset of gastroenteritis",
-            "symptoms": "vomiting and diarrhea"
-        },
-        {
-            "reason": "family emergency",
-            "details": "urgent family situation that requires immediate attention",
-            "symptoms": ""
-        },
-        {
-            "reason": "migraine",
-            "details": "severe migraine attack",
-            "symptoms": "intense headache and light sensitivity"
-        },
-        {
-            "reason": "fever",
-            "details": "high fever and flu-like symptoms",
-            "symptoms": "body aches and fatigue"
-        },
-        {
-            "reason": "dental emergency",
-            "details": "urgent dental issue requiring immediate treatment",
-            "symptoms": "severe tooth pain"
-        },
-        {
-            "reason": "dysentery",
-            "details": "acute dysentery symptoms",
-            "symptoms": "severe abdominal pain and frequent bowel movements"
-        },
-        {
-            "reason": "viral infection",
-            "details": "viral infection with concerning symptoms",
-            "symptoms": "fever and weakness"
-        }
+        "food poisoning from last night's meal",
+        "sudden onset of gastroenteritis", 
+        "urgent family emergency requiring immediate attention",
+        "severe migraine attack",
+        "high fever and flu-like symptoms",
+        "dental emergency requiring urgent treatment",
+        "acute dysentery symptoms",
+        "viral infection with concerning symptoms",
+        "stomach bug with severe symptoms",
+        "family medical emergency",
+        "severe headache and nausea",
+        "sudden illness requiring rest"
     ]
     
-    excuse = random.choice(excuses_pool)
+    selected_excuse = random.choice(excuses_pool)
     
-    email_templates = [
-        f"""Subject: Sick Leave Request - Tomorrow
+    prompt = f"""Write a brief, professional sick leave email (2-3 sentences only) for tomorrow. Use this reason: {selected_excuse}
 
-Dear [Manager Name],
+Requirements:
+- Professional but not overly formal tone
+- Include subject line
+- Keep it concise and believable  
+- Use placeholders [Manager Name] and [Your Name]
+- Don't over-explain or provide too many details
+- Sound natural and authentic
 
-I am experiencing {excuse['details']} and will not be able to come to work tomorrow. {excuse['symptoms'] and f'I have {excuse["symptoms"]}' or 'I need to rest and recover'}. I expect to return by the following day.
+Format as a complete email ready to send."""
 
-I will monitor emails periodically and handle any urgent matters remotely if possible.
-
-Thank you for understanding.
-
-Best regards,
-[Your Name]""",
-
-        f"""Subject: Unable to Attend Work Tomorrow
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        # Fallback simple template if AI fails
+        return f"""Subject: Sick Leave Request - Tomorrow
 
 Hi [Manager Name],
 
-I'm writing to inform you that I won't be able to come to work tomorrow due to {excuse['details']}. {excuse['symptoms'] and f'I'm experiencing {excuse["symptoms"]}' or 'This requires immediate attention'} and I need to take care of this urgently.
+I'm experiencing {selected_excuse} and won't be able to come to work tomorrow. I expect to be back the following day.
 
-I plan to be back the day after tomorrow. Please let me know if there's anything critical that needs immediate attention.
+Thanks for understanding.
 
-Thanks,
-[Your Name]""",
-
-        f"""Subject: Sick Leave - Tomorrow
-
-Hello [Manager Name],
-
-I'm feeling quite unwell with {excuse['details']} and won't be able to make it to the office tomorrow. {excuse['symptoms'] and f'The {excuse["symptoms"]} are quite severe' or 'I need to address this matter promptly'}.
-
-I will check emails when possible and aim to return to work the following day.
-
-Regards,
 [Your Name]"""
-    ]
-    
-    return random.choice(email_templates)
 
 def analyze_leave_decision(data, weather):
     """Enhanced AI analysis for leave recommendation"""
