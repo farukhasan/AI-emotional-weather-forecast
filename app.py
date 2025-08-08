@@ -245,11 +245,11 @@ def analyze_leave_decision(data, weather):
     
     # Convert leave balance to numeric factor
     leave_factor = {
-        "0-5 days": 0.9,  # High availability
-        "6-10 days": 0.7,  # Moderate availability  
-        "11-15 days": 0.5,  # Getting limited
-        "16-20 days": 0.3,  # Low availability
-        "21+ days": 0.1    # Very limited
+        "20+ days left": 0.9,  # High availability
+        "15-19 days left": 0.7,  # Good availability  
+        "10-14 days left": 0.5,  # Moderate availability
+        "5-9 days left": 0.3,  # Low availability
+        "0-4 days left": 0.1    # Very limited
     }
     
     leave_multiplier = leave_factor.get(data['leave_taken'], 0.7)
@@ -266,15 +266,15 @@ CURRENT STATE:
 - Last break taken: {data['last_break']}
 - Tomorrow's work importance: {data['tomorrow_importance']}
 - Support system: {data['support']}
-- Leave taken this year: {data['leave_taken']}
+- Leave remaining this year: {data['leave_taken']}
 
 WEATHER TOMORROW: {weather['temp_high']}°C/{weather['temp_low']}°C, {weather['condition']}, {weather['rain_chance']}% rain chance
 
 LEAVE BALANCE CONSIDERATION:
-- If 16+ days taken: Strongly discourage leave unless crisis
-- If 11-15 days: Caution about leave balance, suggest alternatives
-- If 6-10 days: Moderate consideration of leave balance
-- If 0-5 days: Leave balance not a concern
+- If 0-4 days left: Strongly discourage leave unless crisis
+- If 5-9 days left: Caution about leave balance, suggest alternatives
+- If 10-14 days left: Moderate consideration of leave balance
+- If 15+ days left: Leave balance not a major concern
 
 DECISION FRAMEWORK:
 - Full Day Leave: For burnout, severe stress, or mental health crisis (consider leave balance)
@@ -346,10 +346,10 @@ Weather considerations:
         
         # Decision logic based on multiple factors including leave balance
         leave_balance_warning = ""
-        if data['leave_taken'] in ["16-20 days", "21+ days"]:
-            leave_balance_warning = " However, consider your leave balance before taking time off."
-            if wellness > 30:  # Adjust threshold for high leave usage
-                wellness -= 20  # Penalize for high leave usage
+        if data['leave_taken'] in ["5-9 days left", "0-4 days left"]:
+            leave_balance_warning = " However, consider your remaining leave balance before taking time off."
+            if wellness > 30:  # Adjust threshold for low leave remaining
+                wellness -= 20  # Penalize for low leave remaining
         
         if wellness < 25:
             leave_type = "full_day_leave"
@@ -368,7 +368,7 @@ Weather considerations:
             "wellness_score": wellness,
             "leave_type": leave_type,
             "confidence": 75,
-            "main_reason": f"Work pressure {work_pressure_factor}/10, Energy {energy_factor}/10, Leave taken: {data['leave_taken']}",
+            "main_reason": f"Work pressure {work_pressure_factor}/10, Energy {energy_factor}/10, Leave left: {data['leave_taken']}",
             "decision_summary": decision,
             "work_activities": ["Take regular breaks every hour", "Prioritize only essential tasks", "Stay hydrated and eat well"],
             "work_avoid": ["Overtime or extra commitments", "Perfectionism on minor tasks", "Skipping lunch break"],
@@ -376,7 +376,7 @@ Weather considerations:
             "leave_avoid": ["Checking work emails", "Intensive physical activities", "Making major decisions"],
             "warning_signs": ["Panic attacks", "Complete inability to focus", "Persistent physical symptoms"],
             "recovery_estimate": "1-3 days with proper rest",
-            "leave_balance_note": "Consider your remaining leave balance for future plans" if data['leave_taken'] in ["11-15 days", "16-20 days", "21+ days"] else ""
+            "leave_balance_note": "Consider your remaining leave balance for future plans" if data['leave_taken'] in ["10-14 days left", "5-9 days left", "0-4 days left"] else ""
         }
 
 def main():
@@ -471,9 +471,9 @@ def main():
         sleep = st.slider("Last night's sleep quality", 1, 10, 6, help="1 = Terrible, 10 = Perfect rest")
         
         leave_taken = st.selectbox(
-            "Leave days taken this year",
-            ["0-5 days", "6-10 days", "11-15 days", "16-20 days", "21+ days"],
-            help="Estimated total leave days you've taken so far this year"
+            "Estimated leave days left",
+            ["20+ days left", "15-19 days left", "10-14 days left", "5-9 days left", "0-4 days left"],
+            help="How many leave days do you estimate you have remaining this year"
         )
         
     with col2:
@@ -515,8 +515,8 @@ def main():
             'leave_taken': leave_taken
         }
         
-        with st.spinner("Analyzing your situation..."):
-            time.sleep(1.5)
+        with st.spinner("🤖 Analyzing your situation..."):
+            time.sleep(2)
             analysis = analyze_leave_decision(data, weather)
             
             # Generate leave email if taking leave is recommended
@@ -573,76 +573,38 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # Copy button with JavaScript implementation
+                    # Simple copy button with text selection
                     col1, col2, col3 = st.columns([1, 1, 1])
                     with col2:
-                        # Create a unique ID for this email
-                        email_id = f"email_{int(time.time())}"
-                        
-                        # Display the copy button with JavaScript
-                        st.markdown(f"""
+                        st.markdown("""
                         <div style="text-align: center; margin: 1rem 0;">
-                            <button onclick="copyEmailToClipboard()" style="background: #28a745; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; font-family: 'Lexend Deca', sans-serif; font-weight: 600;">
-                                📋 Copy Email
+                            <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem; font-family: 'Lexend Deca', sans-serif;">Select the email text above and copy it (Ctrl+C / Cmd+C)</p>
+                            <button onclick="selectEmailText()" style="background: #28a745; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; font-family: 'Lexend Deca', sans-serif; font-weight: 600;">
+                                📋 Select Email Text
                             </button>
-                            <div id="copy-status" style="margin-top: 0.5rem; color: #28a745; font-weight: 500; opacity: 0; transition: opacity 0.3s;"></div>
                         </div>
                         
                         <script>
-                        function copyEmailToClipboard() {{
-                            const emailText = `{st.session_state.generated_email.replace('`', '\\`').replace(chr(10), '\\n').replace(chr(13), '')}`;
-                            
-                            if (navigator.clipboard && window.isSecureContext) {{
-                                navigator.clipboard.writeText(emailText).then(function() {{
-                                    showCopySuccess();
-                                }}, function(err) {{
-                                    fallbackCopyTextToClipboard(emailText);
-                                }});
-                            }} else {{
-                                fallbackCopyTextToClipboard(emailText);
-                            }}
-                        }}
-                        
-                        function fallbackCopyTextToClipboard(text) {{
-                            const textArea = document.createElement("textarea");
-                            textArea.value = text;
-                            textArea.style.top = "0";
-                            textArea.style.left = "0";
-                            textArea.style.position = "fixed";
-                            
-                            document.body.appendChild(textArea);
-                            textArea.focus();
-                            textArea.select();
-                            
-                            try {{
-                                document.execCommand('copy');
-                                showCopySuccess();
-                            }} catch (err) {{
-                                showCopyError();
-                            }}
-                            
-                            document.body.removeChild(textArea);
-                        }}
-                        
-                        function showCopySuccess() {{
-                            const status = document.getElementById('copy-status');
-                            status.textContent = '✅ Email copied to clipboard!';
-                            status.style.opacity = '1';
-                            setTimeout(function() {{
-                                status.style.opacity = '0';
-                            }}, 3000);
-                        }}
-                        
-                        function showCopyError() {{
-                            const status = document.getElementById('copy-status');
-                            status.textContent = '❌ Copy failed - please select and copy manually';
-                            status.style.color = '#dc3545';
-                            status.style.opacity = '1';
-                            setTimeout(function() {{
-                                status.style.opacity = '0';
-                                status.style.color = '#28a745';
-                            }}, 4000);
-                        }}
+                        function selectEmailText() {
+                            // Find the email text element
+                            const emailElement = document.querySelector('pre');
+                            if (emailElement) {
+                                // Create a range and select the text
+                                const range = document.createRange();
+                                range.selectNodeContents(emailElement);
+                                const selection = window.getSelection();
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                                
+                                // Try to copy to clipboard
+                                try {
+                                    document.execCommand('copy');
+                                    alert('Email text selected and copied to clipboard!');
+                                } catch (err) {
+                                    alert('Email text selected! Please press Ctrl+C (or Cmd+C) to copy.');
+                                }
+                            }
+                        }
                         </script>
                         """, unsafe_allow_html=True)
             
