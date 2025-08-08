@@ -187,58 +187,73 @@ def get_weather_tomorrow():
     }
 
 def generate_leave_email():
-    """Generate a believable leave email"""
-    prompt = """Generate a short, professional leave email (2-3 lines) to a line manager. 
-    Choose ONE believable excuse from: food poisoning, stomach bug, dysentery, family emergency, 
-    sudden illness, fever, migraine, or similar common reasons.
+    """Generate a believable leave email with variety"""
+    import random
     
-    Format:
-    Subject: [appropriate subject]
+    # Different excuse categories for variety
+    excuses = [
+        "food poisoning from last night's dinner",
+        "severe stomach flu symptoms",
+        "sudden migraine with nausea", 
+        "family medical emergency",
+        "acute gastroenteritis",
+        "high fever and body aches",
+        "severe headache and dizziness",
+        "sudden illness symptoms",
+        "stomach bug that started overnight",
+        "urgent family situation"
+    ]
+    
+    excuse = random.choice(excuses)
+    
+    prompt = f"""Generate a short, professional leave email (2-3 lines) to a line manager using this excuse: {excuse}
+    
+    Make it sound natural and professionally appropriate. Use this format:
+    Subject: [subject line]
     
     Dear [Manager's Name],
     
-    [2-3 lines explaining the situation and requesting leave]
+    [2-3 lines with the excuse and leave request]
     
     Best regards,
     [Your Name]
     
-    Make it sound natural, not overly dramatic, and professionally appropriate."""
+    Vary the wording and tone slightly each time."""
     
     try:
         response = model.generate_content(prompt)
         return response.text.strip()
     except:
-        # Fallback email templates
-        templates = [
-            """Subject: Sick Leave Request - [Your Name]
+        # Enhanced fallback with more variety
+        fallback_templates = [
+            f"""Subject: Sick Leave Request - [Your Name]
 
 Dear [Manager's Name],
 
-I'm experiencing severe stomach issues and food poisoning symptoms since last night. I need to take sick leave today to recover and avoid spreading any illness.
+I'm experiencing {excuse} and won't be able to come to work today. I need to rest and recover to avoid any complications.
 
 Best regards,
 [Your Name]""",
             
-            """Subject: Unable to Come to Work Today
+            f"""Subject: Unable to Attend Work Today
 
 Dear [Manager's Name],
 
-I have a sudden family emergency that requires my immediate attention today. I apologize for the short notice and will keep you updated.
+Due to {excuse}, I need to take sick leave today. I apologize for the short notice and will keep you updated on my recovery.
 
 Best regards,
 [Your Name]""",
             
-            """Subject: Sick Leave - [Your Name]
+            f"""Subject: Sick Leave - [Your Name]
 
 Dear [Manager's Name],
 
-I've come down with a severe migraine and fever overnight. I need to take the day off to rest and recover properly.
+I have {excuse} and need to take the day off to recover properly. I'll be back as soon as I'm feeling better.
 
 Best regards,
 [Your Name]"""
         ]
-        import random
-        return random.choice(templates)
+        return random.choice(fallback_templates)
 
 def analyze_leave_decision(data, weather):
     """Enhanced AI analysis for leave recommendation with leave balance consideration"""
@@ -344,32 +359,35 @@ Weather considerations:
         wellness = 100 - (work_pressure_factor * 6) - (personal_stress_factor * 6) - ((10 - energy_factor) * 8) - ((10 - sleep_factor) * 6)
         wellness = max(5, min(100, int(wellness * leave_multiplier)))  # Adjust for leave balance
         
-        # Decision logic based on multiple factors including leave balance
+        # AI-style decision logic based on multiple factors including leave balance
         leave_balance_warning = ""
+        ai_justification = ""
+        
         if data['leave_taken'] in ["5-9 days left", "0-4 days left"]:
-            leave_balance_warning = " However, consider your remaining leave balance before taking time off."
+            leave_balance_warning = " Your remaining leave balance is a significant factor in this recommendation."
+            ai_justification += f"Considering your limited leave balance ({data['leave_taken']}), "
             if wellness > 30:  # Adjust threshold for low leave remaining
                 wellness -= 20  # Penalize for low leave remaining
         
         if wellness < 25:
             leave_type = "full_day_leave"
-            decision = f"Your stress levels are critically high and energy is depleted. A full day of rest is essential.{leave_balance_warning}"
+            ai_justification += f"AI Analysis: Your wellness score is critically low at {wellness}/100. The combination of high work pressure ({work_pressure_factor}/10), personal stress ({personal_stress_factor}/10), and low energy ({energy_factor}/10) indicates severe burnout risk. Immediate rest is essential to prevent long-term health consequences.{leave_balance_warning}"
         elif wellness < 45:
             leave_type = "half_day_leave"  
-            decision = f"Moderate stress levels suggest you need some recovery time. Consider half day or leaving early.{leave_balance_warning}"
+            ai_justification += f"AI Analysis: Your wellness score is {wellness}/100, indicating moderate stress levels. While you're managing, the elevated work pressure and declining energy suggest you need strategic recovery time. A half day will help reset without depleting your leave balance significantly.{leave_balance_warning}"
         elif wellness < 65:
             leave_type = "work_with_care"
-            decision = f"You can work tomorrow but need to be very careful with your energy and stress management.{leave_balance_warning}"
+            ai_justification += f"AI Analysis: Your wellness score is {wellness}/100. You can function at work but need careful self-management. The AI detects manageable stress levels but recommends heightened self-care to prevent escalation.{leave_balance_warning}"
         else:
             leave_type = "work_normally"
-            decision = "You're in good shape to work tomorrow. Focus on maintaining your current positive state."
+            ai_justification = f"AI Analysis: Your wellness score is strong at {wellness}/100. The AI assessment shows you're in good psychological and physical condition to work effectively. Your energy levels and stress management are well-balanced."
         
         return {
             "wellness_score": wellness,
             "leave_type": leave_type,
             "confidence": 75,
             "main_reason": f"Work pressure {work_pressure_factor}/10, Energy {energy_factor}/10, Leave left: {data['leave_taken']}",
-            "decision_summary": decision,
+            "decision_summary": ai_justification,
             "work_activities": ["Take regular breaks every hour", "Prioritize only essential tasks", "Stay hydrated and eat well"],
             "work_avoid": ["Overtime or extra commitments", "Perfectionism on minor tasks", "Skipping lunch break"],
             "leave_activities": ["Sleep until naturally awake", "Light exercise or walk", "Do something you enjoy", "Connect with supportive people"],
@@ -515,13 +533,12 @@ def main():
             'leave_taken': leave_taken
         }
         
-        with st.spinner("🤖 Analyzing your situation..."):
-            time.sleep(2)
-            analysis = analyze_leave_decision(data, weather)
-            
-            # Generate leave email if taking leave is recommended
+        with st.spinner("🤖 Analyzing your situation with AI..."):
+            # Force refresh of email generation
             if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
                 st.session_state.generated_email = generate_leave_email()
+            
+            analysis = analyze_leave_decision(data, weather)
             
             # Save assessment
             entry = {
