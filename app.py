@@ -534,11 +534,12 @@ def main():
         }
         
         with st.spinner("🤖 Analyzing your situation with AI..."):
-            # Force refresh of email generation
+            time.sleep(2)
+            analysis = analyze_leave_decision(data, weather)
+            
+            # Generate leave email if taking leave is recommended
             if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
                 st.session_state.generated_email = generate_leave_email()
-            
-            analysis = analyze_leave_decision(data, weather)
             
             # Save assessment
             entry = {
