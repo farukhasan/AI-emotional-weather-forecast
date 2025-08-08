@@ -91,29 +91,6 @@ st.markdown("""
         border: 1px solid #dee2e6;
     }
     
-    .leave-email-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        color: #1a1a1a;
-        border: 1px solid #dee2e6;
-        font-family: 'Courier New', monospace;
-        position: relative;
-    }
-    
-    .copy-button {
-        background: #28a745;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        font-size: 0.8rem;
-        cursor: pointer;
-        float: right;
-        margin-top: -10px;
-    }
-    
     .stButton > button {
         width: 100%;
         background: #007aff;
@@ -149,8 +126,6 @@ st.markdown("""
 # Initialize session state
 if 'assessments' not in st.session_state:
     st.session_state.assessments = []
-if 'generated_email' not in st.session_state:
-    st.session_state.generated_email = ""
 
 # API Configuration
 try:
@@ -267,7 +242,7 @@ def analyze_leave_decision(data, weather):
         "0-4 days left": 0.1    # Very limited
     }
     
-    leave_multiplier = leave_factor.get(data['leave_taken'], 0.7)
+    leave_multiplier = leave_factor.get(data['leave_balance'], 0.7)
     
     prompt = f"""You are an intelligent work-life balance advisor. Analyze if this person should take leave tomorrow based on their mental state, workload, leave balance, and external factors.
 
@@ -281,7 +256,7 @@ CURRENT STATE:
 - Last break taken: {data['last_break']}
 - Tomorrow's work importance: {data['tomorrow_importance']}
 - Support system: {data['support']}
-- Leave remaining this year: {data['leave_taken']}
+- Leave remaining this year: {data['leave_balance']}
 
 WEATHER TOMORROW: {weather['temp_high']}°C/{weather['temp_low']}°C, {weather['condition']}, {weather['rain_chance']}% rain chance
 
@@ -296,15 +271,17 @@ DECISION FRAMEWORK:
 - Half Day/Early Leave: For moderate stress with manageable work
 - Work Normally: For good mental state with support strategies
 - Consider weather impact on mood and recovery opportunities
-- Factor in leave balance - if high usage, suggest coping strategies instead
+- Factor in leave balance - if low remaining days, suggest coping strategies instead
+- AI should make the FINAL decision based on comprehensive analysis
+- Provide detailed justification for the recommendation
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
     "wellness_score": 45,
     "leave_type": "full_day_leave",
     "confidence": 82,
-    "main_reason": "Primary reason for recommendation",
-    "decision_summary": "Brief 2-sentence explanation of the decision including leave balance consideration",
+    "main_reason": "Primary reason for recommendation with detailed AI justification",
+    "decision_summary": "Detailed AI justification (3-4 sentences) explaining why this decision was made considering all factors",
     "work_activities": ["3 things to do if working"],
     "work_avoid": ["3 things to avoid if working"],
     "leave_activities": ["4 recovery activities for leave day"],
@@ -319,7 +296,7 @@ Leave types: "full_day_leave", "half_day_leave", "work_with_care", "work_normall
 SCORING GUIDE (adjusted for leave balance):
 - 80-100: Excellent state, work normally
 - 60-79: Good state, minor support needed
-- 40-59: Moderate stress, consider half day (unless high leave usage)
+- 40-59: Moderate stress, consider half day (unless low leave remaining)
 - 20-39: High stress, likely needs full day (consider leave balance)
 - 0-19: Crisis level, definitely needs leave regardless of balance
 
@@ -363,9 +340,9 @@ Weather considerations:
         leave_balance_warning = ""
         ai_justification = ""
         
-        if data['leave_taken'] in ["5-9 days left", "0-4 days left"]:
+        if data['leave_balance'] in ["5-9 days left", "0-4 days left"]:
             leave_balance_warning = " Your remaining leave balance is a significant factor in this recommendation."
-            ai_justification += f"Considering your limited leave balance ({data['leave_taken']}), "
+            ai_justification += f"Considering your limited leave balance ({data['leave_balance']}), "
             if wellness > 30:  # Adjust threshold for low leave remaining
                 wellness -= 20  # Penalize for low leave remaining
         
@@ -386,7 +363,7 @@ Weather considerations:
             "wellness_score": wellness,
             "leave_type": leave_type,
             "confidence": 75,
-            "main_reason": f"Work pressure {work_pressure_factor}/10, Energy {energy_factor}/10, Leave left: {data['leave_taken']}",
+            "main_reason": f"Work pressure {work_pressure_factor}/10, Energy {energy_factor}/10, Leave left: {data['leave_balance']}",
             "decision_summary": ai_justification,
             "work_activities": ["Take regular breaks every hour", "Prioritize only essential tasks", "Stay hydrated and eat well"],
             "work_avoid": ["Overtime or extra commitments", "Perfectionism on minor tasks", "Skipping lunch break"],
@@ -394,7 +371,7 @@ Weather considerations:
             "leave_avoid": ["Checking work emails", "Intensive physical activities", "Making major decisions"],
             "warning_signs": ["Panic attacks", "Complete inability to focus", "Persistent physical symptoms"],
             "recovery_estimate": "1-3 days with proper rest",
-            "leave_balance_note": "Consider your remaining leave balance for future plans" if data['leave_taken'] in ["10-14 days left", "5-9 days left", "0-4 days left"] else ""
+            "leave_balance_note": "Consider your remaining leave balance for future plans" if data['leave_balance'] in ["10-14 days left", "5-9 days left", "0-4 days left"] else ""
         }
 
 def main():
@@ -488,7 +465,7 @@ def main():
         energy = st.slider("Energy level", 1, 10, 5, help="1 = Completely drained, 10 = Highly energized")
         sleep = st.slider("Last night's sleep quality", 1, 10, 6, help="1 = Terrible, 10 = Perfect rest")
         
-        leave_taken = st.selectbox(
+        leave_balance = st.selectbox(
             "Estimated leave days left",
             ["20+ days left", "15-19 days left", "10-14 days left", "5-9 days left", "0-4 days left"],
             help="How many leave days do you estimate you have remaining this year"
@@ -530,16 +507,12 @@ def main():
             'last_break': last_break,
             'tomorrow_importance': tomorrow_importance,
             'support': support,
-            'leave_taken': leave_taken
+            'leave_balance': leave_balance
         }
         
-        with st.spinner("🤖 Analyzing your situation with AI..."):
-            time.sleep(2)
+        with st.spinner("Analyzing your situation..."):
+            time.sleep(1.5)
             analysis = analyze_leave_decision(data, weather)
-            
-            # Generate leave email if taking leave is recommended
-            if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
-                st.session_state.generated_email = generate_leave_email()
             
             # Save assessment
             entry = {
@@ -578,53 +551,20 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Display leave email if leave is recommended
-            if analysis['leave_type'] in ['full_day_leave', 'half_day_leave'] and st.session_state.generated_email:
-                st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">📧 Leave Email Draft</h3>', unsafe_allow_html=True)
+            # Generate and display leave email only for leave recommendations
+            if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
+                generated_email = generate_leave_email()
                 
-                # Email display with copy functionality
-                email_container = st.container()
-                with email_container:
-                    st.markdown(f"""
-                    <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; position: relative; font-family: 'Courier New', monospace;">
-                        <pre style="margin: 0; white-space: pre-wrap; color: #1a1a1a; font-family: 'Courier New', monospace;">{st.session_state.generated_email}</pre>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Simple copy button with text selection
-                    col1, col2, col3 = st.columns([1, 1, 1])
-                    with col2:
-                        st.markdown("""
-                        <div style="text-align: center; margin: 1rem 0;">
-                            <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem; font-family: 'Lexend Deca', sans-serif;">Select the email text above and copy it (Ctrl+C / Cmd+C)</p>
-                            <button onclick="selectEmailText()" style="background: #28a745; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; font-family: 'Lexend Deca', sans-serif; font-weight: 600;">
-                                📋 Select Email Text
-                            </button>
-                        </div>
-                        
-                        <script>
-                        function selectEmailText() {
-                            // Find the email text element
-                            const emailElement = document.querySelector('pre');
-                            if (emailElement) {
-                                // Create a range and select the text
-                                const range = document.createRange();
-                                range.selectNodeContents(emailElement);
-                                const selection = window.getSelection();
-                                selection.removeAllRanges();
-                                selection.addRange(range);
-                                
-                                // Try to copy to clipboard
-                                try {
-                                    document.execCommand('copy');
-                                    alert('Email text selected and copied to clipboard!');
-                                } catch (err) {
-                                    alert('Email text selected! Please press Ctrl+C (or Cmd+C) to copy.');
-                                }
-                            }
-                        }
-                        </script>
-                        """, unsafe_allow_html=True)
+                st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Leave Email Draft</h3>', unsafe_allow_html=True)
+                
+                # Email display
+                st.markdown(f"""
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; position: relative; font-family: 'Courier New', monospace;">
+                    <pre style="margin: 0; white-space: pre-wrap; color: #1a1a1a; font-family: 'Courier New', monospace;">{generated_email}</pre>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown('<p style="color: #666; font-size: 0.9rem; text-align: center; font-family: Lexend Deca, sans-serif;">💡 Select the text above and copy it manually (Ctrl+C / Cmd+C)</p>', unsafe_allow_html=True)
             
             # Recommendations based on decision
             col1, col2 = st.columns(2)
