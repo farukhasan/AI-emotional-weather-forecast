@@ -7,14 +7,22 @@ from datetime import datetime, timedelta
 import json
 import time
 import random
-import pyperclip  # for copy-to-clipboard
+st.subheader("📧 Draft Leave Email to Manager")
+st.code(st.session_state.leave_email, language="text")
 
-# Page config
-st.set_page_config(
-    page_title="Should I Take Leave Tomorrow?",
-    page_icon="🌅",
-    layout="centered"
-)
+copy_email_js = f"""
+    <script>
+    function copyToClipboard(text) {{
+        navigator.clipboard.writeText(text).then(function() {{
+            alert("Copied to clipboard!");
+        }}, function(err) {{
+            alert("Failed to copy text: " + err);
+        }});
+    }}
+    </script>
+    <button onclick="copyToClipboard(`{st.session_state.leave_email}`)">Copy Email</button>
+"""
+st.markdown(copy_email_js, unsafe_allow_html=True)
 
 # Simple CSS with dark text on white background
 st.markdown("""
@@ -186,3 +194,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
