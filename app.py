@@ -6,7 +6,6 @@ import requests
 from datetime import datetime, timedelta
 import json
 import time
-import random
 
 # Page config
 st.set_page_config(
@@ -92,18 +91,6 @@ st.markdown("""
         border: 1px solid #dee2e6;
     }
     
-    .email-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        color: #1a1a1a;
-        border: 1px solid #dee2e6;
-        font-family: 'Courier New', monospace;
-        white-space: pre-wrap;
-        font-size: 0.9rem;
-    }
-    
     .stButton > button {
         width: 100%;
         background: #007aff;
@@ -174,74 +161,15 @@ def get_weather_tomorrow():
         "rain_chance": 20
     }
 
-def generate_leave_email():
-    """Generate a believable leave email using AI"""
-    
-    excuses_pool = [
-        "food poisoning from last night's meal",
-        "sudden onset of gastroenteritis", 
-        "urgent family emergency requiring immediate attention",
-        "severe migraine attack",
-        "high fever and flu-like symptoms",
-        "dental emergency requiring urgent treatment",
-        "acute dysentery symptoms",
-        "viral infection with concerning symptoms",
-        "stomach bug with severe symptoms",
-        "family medical emergency",
-        "severe headache and nausea",
-        "sudden illness requiring rest"
-    ]
-    
-    selected_excuse = random.choice(excuses_pool)
-    
-    prompt = f"""Write a brief, professional sick leave email (2-3 sentences only) for tomorrow. Use this reason: {selected_excuse}
-
-Requirements:
-- Professional but not overly formal tone
-- Include subject line
-- Keep it concise and believable  
-- Use placeholders [Manager Name] and [Your Name]
-- Don't over-explain or provide too many details
-- Sound natural and authentic
-
-Format as a complete email ready to send."""
-
-    try:
-        response = model.generate_content(prompt)
-        return response.text.strip()
-    except Exception as e:
-        # Fallback simple template if AI fails
-        return f"""Subject: Sick Leave Request - Tomorrow
-
-Hi [Manager Name],
-
-I'm experiencing {selected_excuse} and won't be able to come to work tomorrow. I expect to be back the following day.
-
-Thanks for understanding.
-
-[Your Name]"""
-
 def analyze_leave_decision(data, weather):
     """Enhanced AI analysis for leave recommendation"""
     
-    # Calculate leave pressure based on remaining leave
-    leave_ranges = {
-        "25+ days": 0,      # No pressure
-        "15-24 days": 1,    # Very low pressure  
-        "10-14 days": 3,    # Low pressure
-        "5-9 days": 6,      # Moderate pressure
-        "1-4 days": 8,      # High pressure
-        "0 days": 10        # Maximum pressure
-    }
-    
-    leave_pressure = leave_ranges.get(data['remaining_leave'], 5)
-    
-    prompt = f"""You are an intelligent work-life balance advisor. Analyze if this person should take leave tomorrow based on their mental state, workload, external factors, and remaining leave balance.
+    prompt = f"""You are an intelligent work-life balance advisor. Analyze if this person should take leave tomorrow based on their mental state, workload, and external factors.
 
 CURRENT STATE:
 - Overall feeling: {data['mood']}
 - Energy level: {data['energy']}/10
-- Remaining leave this year: {data['remaining_leave']}
+- Stress level: {data['stress']}/10
 - Sleep quality: {data['sleep']}/10
 - Work pressure: {data['work_pressure']}/10
 - Personal life stress: {data['personal_stress']}/10
@@ -251,12 +179,6 @@ CURRENT STATE:
 - Support system: {data['support']}
 
 WEATHER TOMORROW: {weather['temp_high']}°C/{weather['temp_low']}°C, {weather['condition']}, {weather['rain_chance']}% rain chance
-
-LEAVE BALANCE CONSIDERATIONS:
-- Leave pressure score: {leave_pressure}/10 (higher = more pressure to conserve leave)
-- If leave is very limited (0-4 days), recommend working unless crisis
-- If moderate leave (5-14 days), factor into decision but don't let it override health
-- If plenty of leave (15+ days), don't let leave balance prevent taking needed rest
 
 DECISION FRAMEWORK:
 - Full Day Leave: For burnout, severe stress, or mental health crisis
@@ -276,8 +198,7 @@ Respond in this EXACT JSON format (ensure valid JSON):
     "leave_activities": ["4 recovery activities for leave day"],
     "leave_avoid": ["3 things to avoid during leave"],
     "warning_signs": ["signs requiring immediate attention"],
-    "recovery_estimate": "Expected recovery timeframe",
-    "leave_balance_advice": "Specific advice about leave usage based on remaining balance"
+    "recovery_estimate": "Expected recovery timeframe"
 }}
 
 Leave types: "full_day_leave", "half_day_leave", "work_with_care", "work_normally"
@@ -289,7 +210,10 @@ SCORING GUIDE:
 - 20-39: High stress, likely needs full day
 - 0-19: Crisis level, definitely needs leave
 
-Adjust recommendations based on leave balance - if very low leave remaining, suggest alternative recovery methods unless it's a true health crisis."""
+Weather considerations:
+- Rainy/gloomy: May worsen mood, indoor recovery activities
+- Sunny/pleasant: Good for outdoor recovery, mood boost
+- Extreme weather: Affects commute stress and recovery options"""
 
     try:
         response = model.generate_content(prompt)
@@ -312,8 +236,8 @@ Adjust recommendations based on leave balance - if very low leave remaining, sug
     except Exception as e:
         st.warning(f"AI analysis failed, using fallback logic: {str(e)}")
         
-        # Enhanced fallback logic with leave consideration
-        stress_factor = (data['work_pressure'] + data['personal_stress']) / 2
+        # Enhanced fallback logic
+        stress_factor = (data['stress'] + data['work_pressure'] + data['personal_stress']) / 3
         energy_factor = data['energy']
         sleep_factor = data['sleep']
         
@@ -321,46 +245,32 @@ Adjust recommendations based on leave balance - if very low leave remaining, sug
         wellness = 100 - (stress_factor * 10) - ((10 - energy_factor) * 8) - ((10 - sleep_factor) * 6)
         wellness = max(5, min(100, int(wellness)))
         
-        # Adjust decision based on leave balance
-        if leave_pressure >= 8 and wellness > 30:  # High leave pressure, not crisis
-            leave_type = "work_with_care"
-            decision = f"You have limited leave remaining ({data['remaining_leave']}), so working with extra self-care is recommended unless it's a health emergency."
-            leave_advice = "Consider saving remaining leave for emergencies or planned time off. Focus on recovery activities after work."
-        elif wellness < 25 or (stress_factor > 8 and energy_factor < 3):
+        # Decision logic based on multiple factors
+        if wellness < 25 or (stress_factor > 8 and energy_factor < 3):
             leave_type = "full_day_leave"
             decision = "Your stress levels are critically high and energy is depleted. A full day of rest is essential to prevent burnout."
-            leave_advice = f"Your wellbeing is priority. With {data['remaining_leave']} remaining, this is a justified use of leave."
         elif wellness < 45 or (stress_factor > 6 and sleep_factor < 5):
-            if leave_pressure >= 6:
-                leave_type = "work_with_care"
-                decision = f"You need recovery but have limited leave ({data['remaining_leave']}). Work carefully with breaks."
-                leave_advice = "Try to recover through better work boundaries and after-work rest instead of using leave."
-            else:
-                leave_type = "half_day_leave"
-                decision = "Moderate stress levels suggest you need some recovery time. Consider taking half day or leaving early."
-                leave_advice = f"Half day is a good balance with your {data['remaining_leave']} remaining leave."
+            leave_type = "half_day_leave"
+            decision = "Moderate stress levels suggest you need some recovery time. Consider taking half day or leaving early."
         elif wellness < 65:
             leave_type = "work_with_care"
             decision = "You can work tomorrow but need to be very careful with your energy and stress management."
-            leave_advice = f"Save your leave for when you really need it. You have {data['remaining_leave']} for the year."
         else:
             leave_type = "work_normally"
             decision = "You're in good shape to work tomorrow. Focus on maintaining your current positive state."
-            leave_advice = f"Great that you're feeling well! Keep your {data['remaining_leave']} for future needs or planned breaks."
         
         return {
             "wellness_score": wellness,
             "leave_type": leave_type,
             "confidence": 75,
-            "main_reason": f"Energy {energy_factor}/10, Leave balance: {data['remaining_leave']}",
+            "main_reason": f"Stress level {stress_factor:.1f}/10, Energy {energy_factor}/10",
             "decision_summary": decision,
             "work_activities": ["Take regular breaks every hour", "Prioritize only essential tasks", "Stay hydrated and eat well"],
             "work_avoid": ["Overtime or extra commitments", "Perfectionism on minor tasks", "Skipping lunch break"],
             "leave_activities": ["Sleep until naturally awake", "Light exercise or walk", "Do something you enjoy", "Connect with supportive people"],
             "leave_avoid": ["Checking work emails", "Intensive physical activities", "Making major decisions"],
             "warning_signs": ["Panic attacks", "Complete inability to focus", "Persistent physical symptoms"],
-            "recovery_estimate": "1-3 days with proper rest",
-            "leave_balance_advice": leave_advice
+            "recovery_estimate": "1-3 days with proper rest"
         }
 
 def main():
@@ -452,11 +362,7 @@ def main():
         )
         
         energy = st.slider("Energy level", 1, 10, 5, help="1 = Completely drained, 10 = Highly energized")
-        remaining_leave = st.selectbox(
-            "Estimated leave days remaining this year",
-            ["25+ days", "15-24 days", "10-14 days", "5-9 days", "1-4 days", "0 days"],
-            help="How many leave days do you have left for this year?"
-        )
+        stress = st.slider("Current stress", 1, 10, 5, help="1 = Very relaxed, 10 = Extremely stressed")
         sleep = st.slider("Last night's sleep quality", 1, 10, 6, help="1 = Terrible, 10 = Perfect rest")
         
     with col2:
@@ -488,7 +394,7 @@ def main():
         data = {
             'mood': mood,
             'energy': energy,
-            'remaining_leave': remaining_leave,
+            'stress': stress,
             'sleep': sleep,
             'work_pressure': work_pressure,
             'personal_stress': personal_stress,
@@ -530,34 +436,6 @@ def main():
                 <p style="font-size: 0.9rem; opacity: 0.8; color: white; font-family: Lexend Deca, sans-serif;">Confidence: {analysis['confidence']}%</p>
             </div>
             """, unsafe_allow_html=True)
-            
-            # Leave balance advice
-            if analysis.get('leave_balance_advice'):
-                st.markdown(f"""
-                <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-weight: 500; font-family: Lexend Deca, sans-serif;">
-                    <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">💡 Leave Balance Insight:</strong><br>
-                    {analysis['leave_balance_advice']}
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Leave email section (only show if recommendation is to take leave)
-            if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
-                st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">📧 Leave Email Draft</h3>', unsafe_allow_html=True)
-                
-                # Generate email button
-                if st.button("Generate Leave Email", key="generate_email"):
-                    leave_email = generate_leave_email()
-                    st.markdown(f"""
-                    <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-family: 'Courier New', monospace; white-space: pre-wrap; font-size: 0.9rem;">
-{leave_email}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown("""
-                    <div style="background: #fff3cd; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #856404; border: 1px solid #ffeaa7; font-family: Lexend Deca, sans-serif; font-size: 0.85rem;">
-                        <strong>Note:</strong> Replace [Manager Name] and [Your Name] with actual names. Use responsibly and only when genuinely needed.
-                    </div>
-                    """, unsafe_allow_html=True)
             
             # Recommendations based on decision
             col1, col2 = st.columns(2)
