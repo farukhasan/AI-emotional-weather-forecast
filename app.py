@@ -245,6 +245,7 @@ DECISION FRAMEWORK:
 - Work Normally: For good mental state with support strategies
 - Consider weather impact on mood and recovery opportunities
 - Consider leave balance - if low, be more conservative
+- If no leave balance left, do not recommend taking leave regardless of wellness score
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
@@ -278,7 +279,8 @@ Weather considerations:
 Leave balance considerations:
 - High balance (>15 days): More flexible with recommendations
 - Medium balance (5-15 days): Moderate recommendations
-- Low balance (<5 days): Conservative recommendations"""
+- Low balance (<5 days): Conservative recommendations
+- No leave left: MUST recommend work_with_care or work_normally regardless of wellness score"""
 
     try:
         response = model.generate_content(prompt)
@@ -312,6 +314,7 @@ Leave balance considerations:
         
         # Parse leave balance
         leave_balance_text = data['leave_balance']
+        no_leave_left = 'No leave left' in leave_balance_text
         if '20+' in leave_balance_text:
             leave_days = 20
         elif '15-20' in leave_balance_text:
@@ -321,7 +324,7 @@ Leave balance considerations:
         elif '5-10' in leave_balance_text:
             leave_days = 5
         else:
-            leave_days = 2
+            leave_days = 2 if not no_leave_left else 0
         
         # Calculate wellness score with leave balance consideration
         wellness = 100 - (stress_factor * 10) - ((10 - energy_factor) * 8) - ((10 - sleep_factor) * 6)
@@ -335,7 +338,15 @@ Leave balance considerations:
         wellness = max(5, min(100, int(wellness)))
         
         # Decision logic based on multiple factors
-        if wellness < 25 or (stress_factor > 8 and energy_factor < 3):
+        if no_leave_left:
+            # If no leave left, don't suggest taking leave regardless of wellness score
+            if wellness < 45:
+                leave_type = "work_with_care"
+                decision = "You should work with caution tomorrow as your wellness score is low. Focus on self-care strategies while working since you have no leave balance remaining."
+            else:
+                leave_type = "work_normally"
+                decision = "You're in good shape to work tomorrow. Focus on maintaining your current positive state."
+        elif wellness < 25 or (stress_factor > 8 and energy_factor < 3):
             leave_type = "full_day_leave"
             decision = "Your stress levels are critically high and energy is depleted. A full day of rest is essential to prevent burnout."
         elif wellness < 45 or (stress_factor > 6 and sleep_factor < 5):
@@ -636,3 +647,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
