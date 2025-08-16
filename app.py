@@ -206,7 +206,17 @@ Requirements:
     try:
         response = model.generate_content(prompt)
         text = (response.text or "").strip()
-        return text if text else f"Subject: Leave Application for Tomorrow\n\nDear Manager,\n\nI would like to request leave for tomorrow due to {chosen_reason}. I will ensure any urgent tasks are handed over and remain reachable for critical matters if needed.\n\nThank you for your understanding.\n\nBest regards,\n[Your Name]"
+        # Ensure 'Best regards' is present
+        if text:
+            if "best regards".lower() not in text.lower():
+                # Add 'Best regards' before [Your Name] or at the end
+                if "[Your Name]" in text:
+                    text = text.replace("[Your Name]", "Best regards,\n[Your Name]")
+                else:
+                    text = text.strip() + "\n\nBest regards,\n[Your Name]"
+            return text
+        else:
+            return f"Subject: Leave Application for Tomorrow\n\nDear Manager,\n\nI would like to request leave for tomorrow due to {chosen_reason}. I will ensure any urgent tasks are handed over and remain reachable for critical matters if needed.\n\nThank you for your understanding.\n\nBest regards,\n[Your Name]"
     except Exception:
         # Fallback email (deterministic, still varies via chosen_reason)
         return f"""Subject: Leave Application for Tomorrow
@@ -636,3 +646,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
