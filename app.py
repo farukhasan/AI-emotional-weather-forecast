@@ -10,228 +10,116 @@ import time
 
 # Page config
 st.set_page_config(
-    page_title="Leave It To AI",
-    page_icon="🏝️",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    page_title="Should I Take Leave Tomorrow?",
+    page_icon="🌅",
+    layout="centered"
 )
 
-# Modern minimalistic CSS with clean aesthetics
+# Simple CSS with dark text on white background
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    :root {
-        --primary: #0066FF;
-        --primary-light: rgba(0, 102, 255, 0.1);
-        --success: #00C853;
-        --warning: #FFB300;
-        --danger: #FF3D00;
-        --text-dark: #111827;
-        --text-medium: #4B5563;
-        --text-light: #9CA3AF;
-        --bg-light: #F9FAFB;
-        --border-light: #E5E7EB;
-        --radius-sm: 8px;
-        --radius-md: 12px;
-        --radius-lg: 16px;
-        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;500;600;700&display=swap');
     
     .stApp {
         background-color: white;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    
-    /* Clean up Streamlit's default padding */
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 720px;
-    }
-    
-    /* Typography */
-    h1, h2, h3, h4, h5, h6, .main-title, .subtitle {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        font-weight: 600;
-        color: var(--text-dark);
-        letter-spacing: -0.02em;
+        font-family: 'Lexend Deca', sans-serif;
     }
     
     .main-title {
-        font-size: 2.25rem;
-        line-height: 1.2;
-        margin-bottom: 0.25rem;
+        font-size: 2.5rem;
+        font-weight: 600;
         text-align: center;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        font-family: 'Lexend Deca', sans-serif;
     }
     
     .subtitle {
-        font-size: 1.1rem;
-        font-weight: 400;
+        font-size: 1.2rem;
         text-align: center;
-        color: var(--text-medium);
-        margin-bottom: 2.5rem;
+        color: #666;
+        margin-bottom: 3rem;
+        font-family: 'Lexend Deca', sans-serif;
     }
     
-    /* Cards */
     .decision-card {
-        background: var(--primary);
-        border-radius: var(--radius-lg);
+        background: #007aff;
+        border-radius: 16px;
         padding: 2rem;
         color: white;
         text-align: center;
         margin: 2rem 0;
-        box-shadow: var(--shadow-lg);
-        transition: transform 0.2s ease;
-    }
-    
-    .decision-card:hover {
-        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15);
     }
     
     .recommendation {
-        background: var(--bg-light);
-        border-radius: var(--radius-md);
+        background: #f8f9fa;
+        border-radius: 12px;
         padding: 1.5rem;
         margin: 1rem 0;
-        color: var(--text-dark);
-        border: 1px solid var(--border-light);
+        color: #1a1a1a;
+        border: 1px solid #dee2e6;
         font-weight: 500;
-        box-shadow: var(--shadow-sm);
     }
     
-    /* Action items */
     .do-item {
-        background: rgba(0, 200, 83, 0.1);
-        border-radius: var(--radius-sm);
+        background: #d4edda;
+        border-radius: 8px;
         padding: 1rem;
         margin: 0.5rem 0;
-        color: var(--text-dark);
+        color: #1a1a1a;
         font-weight: 500;
-        border-left: 3px solid var(--success);
-        transition: transform 0.15s ease;
-    }
-    
-    .do-item:hover {
-        transform: translateX(2px);
+        border-left: 3px solid #28a745;
     }
     
     .dont-item {
-        background: rgba(255, 61, 0, 0.1);
-        border-radius: var(--radius-sm);
+        background: #f8d7da;
+        border-radius: 8px;
         padding: 1rem;
         margin: 0.5rem 0;
-        color: var(--text-dark);
+        color: #1a1a1a;
         font-weight: 500;
-        border-left: 3px solid var(--danger);
-        transition: transform 0.15s ease;
+        border-left: 3px solid #dc3545;
     }
     
-    .dont-item:hover {
-        transform: translateX(2px);
-    }
-    
-    /* Weather card */
     .weather-card {
-        background: var(--bg-light);
-        border-radius: var(--radius-md);
+        background: #f8f9fa;
+        border-radius: 12px;
         padding: 1.5rem;
-        margin: 1.5rem 0;
-        color: var(--text-dark);
+        margin: 1rem 0;
+        color: #1a1a1a;
         text-align: center;
-        border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-sm);
-        transition: all 0.2s ease;
+        border: 1px solid #dee2e6;
     }
     
-    .weather-card:hover {
-        box-shadow: var(--shadow-md);
-        border-color: var(--primary-light);
-    }
-    
-    /* Button styling */
     .stButton > button {
         width: 100%;
-        background: var(--primary);
+        background: #007aff;
         color: white;
         border: none;
-        border-radius: var(--radius-md);
-        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        padding: 1rem;
         font-weight: 600;
         font-size: 1rem;
         margin-top: 1.5rem;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.2s ease;
-        box-shadow: var(--shadow-sm);
+        font-family: 'Lexend Deca', sans-serif;
     }
     
-    .stButton > button:hover {
-        background: #0052CC;
-        box-shadow: var(--shadow-md);
-        transform: translateY(-1px);
-    }
-    
-    .stButton > button:active {
-        transform: translateY(0);
-    }
-    
-    /* Form elements */
-    .stSelectbox, .stSlider {
-        margin-bottom: 1rem;
-    }
-    
-    /* App title and subtitle */
-    .main-title {
-        font-size: 2.5rem; 
-        font-weight: 700; 
-        text-align: center; 
-        color: var(--text-dark); 
-        margin-bottom: 0.5rem; 
-        font-family: 'Inter', sans-serif;
-        letter-spacing: -0.02em;
-    }
-    
-    .subtitle {
-        font-size: 1.2rem; 
-        text-align: center; 
-        color: var(--text-light); 
-        margin-bottom: 2.5rem; 
-        font-family: 'Inter', sans-serif;
-        font-weight: 400;
-    }
-    
-    /* Fix for input labels */
+    /* Fix for input labels to be black */
     .stSelectbox label,
     .stSlider label,
     .stSelectbox > div > label,
     .stSlider > div > label,
     label[data-testid="stWidgetLabel"] {
-        color: var(--text-dark) !important;
-        font-family: 'Inter', sans-serif !important;
+        color: #1a1a1a !important;
+        font-family: 'Lexend Deca', sans-serif !important;
         font-weight: 500 !important;
-        font-size: 0.9rem !important;
     }
     
-    /* Streamlit widget customization */
-    div[data-testid="stVerticalBlock"] > div {
-        gap: 0.75rem !important;
-    }
-    
-    /* Dividers */
-    hr {
-        margin: 2rem 0;
-        border-color: var(--border-light);
-        opacity: 0.5;
-    }
-    
-    /* Footer styling */
-    footer {
-        font-size: 0.8rem;
-        color: var(--text-light);
-        text-align: center;
-        padding: 1rem 0;
+    /* Additional targeting for labels */
+    .stSelectbox > label,
+    .stSlider > label {
+        color: #1a1a1a !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -357,7 +245,6 @@ DECISION FRAMEWORK:
 - Work Normally: For good mental state with support strategies
 - Consider weather impact on mood and recovery opportunities
 - Consider leave balance - if low, be more conservative
-- If no leave balance left, do not recommend taking leave regardless of wellness score
 
 Respond in this EXACT JSON format (ensure valid JSON):
 {{
@@ -391,8 +278,7 @@ Weather considerations:
 Leave balance considerations:
 - High balance (>15 days): More flexible with recommendations
 - Medium balance (5-15 days): Moderate recommendations
-- Low balance (<5 days): Conservative recommendations
-- No leave left: MUST recommend work_with_care or work_normally regardless of wellness score"""
+- Low balance (<5 days): Conservative recommendations"""
 
     try:
         response = model.generate_content(prompt)
@@ -426,7 +312,6 @@ Leave balance considerations:
         
         # Parse leave balance
         leave_balance_text = data['leave_balance']
-        no_leave_left = 'No leave left' in leave_balance_text
         if '20+' in leave_balance_text:
             leave_days = 20
         elif '15-20' in leave_balance_text:
@@ -436,7 +321,7 @@ Leave balance considerations:
         elif '5-10' in leave_balance_text:
             leave_days = 5
         else:
-            leave_days = 2 if not no_leave_left else 0
+            leave_days = 2
         
         # Calculate wellness score with leave balance consideration
         wellness = 100 - (stress_factor * 10) - ((10 - energy_factor) * 8) - ((10 - sleep_factor) * 6)
@@ -450,15 +335,7 @@ Leave balance considerations:
         wellness = max(5, min(100, int(wellness)))
         
         # Decision logic based on multiple factors
-        if no_leave_left:
-            # If no leave left, don't suggest taking leave regardless of wellness score
-            if wellness < 45:
-                leave_type = "work_with_care"
-                decision = "You should work with caution tomorrow as your wellness score is low. Focus on self-care strategies while working since you have no leave balance remaining."
-            else:
-                leave_type = "work_normally"
-                decision = "You're in good shape to work tomorrow. Focus on maintaining your current positive state."
-        elif wellness < 25 or (stress_factor > 8 and energy_factor < 3):
+        if wellness < 25 or (stress_factor > 8 and energy_factor < 3):
             leave_type = "full_day_leave"
             decision = "Your stress levels are critically high and energy is depleted. A full day of rest is essential to prevent burnout."
         elif wellness < 45 or (stress_factor > 6 and sleep_factor < 5):
@@ -495,50 +372,57 @@ def render_analysis_ui(analysis, leave_mail):
     }
     decision_text, decision_color = leave_type_map.get(analysis['leave_type'], ("Work With Care", "#007aff"))
 
-    # Decision card with inline styles using CSS variables
+    # Decision card with inline styles
     st.markdown(f"""
-    <div style="background: var(--primary); border-radius: var(--radius-lg); padding: 2rem; color: white; text-align: center; margin: 2rem 0; box-shadow: var(--shadow-lg); font-family: Inter, sans-serif; transition: transform 0.2s ease;">
-        <h2 style="margin: 0; font-weight: 600; color: white; font-family: Inter, sans-serif;">{decision_text}</h2>
-        <p style="font-size: 1.1rem; opacity: 0.9; margin: 1rem 0; color: white; font-family: Inter, sans-serif;">{analysis['decision_summary']}</p>
-        <p style="font-size: 0.9rem; opacity: 0.8; color: white; font-family: Inter, sans-serif;">Confidence: {analysis['confidence']}%</p>
+    <div style="background: #007aff; border-radius: 16px; padding: 2rem; color: white; text-align: center; margin: 2rem 0; box-shadow: 0 4px 20px rgba(0, 122, 255, 0.15); font-family: Lexend Deca, sans-serif;">
+        <h2 style="margin: 0; font-weight: 600; color: white; font-family: Lexend Deca, sans-serif;">{decision_text}</h2>
+        <p style="font-size: 1.1rem; opacity: 0.9; margin: 1rem 0; color: white; font-family: Lexend Deca, sans-serif;">{analysis['decision_summary']}</p>
+        <p style="font-size: 0.9rem; opacity: 0.8; color: white; font-family: Lexend Deca, sans-serif;">Confidence: {analysis['confidence']}%</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Recommendations based on decision with updated styling
+    # Recommendations based on decision
     col1, col2 = st.columns(2)
     if analysis['leave_type'] in ['full_day_leave', 'half_day_leave']:
         with col1:
-            st.markdown('<p style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-bottom: 0.75rem;">Recovery Activities:</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Recovery Activities:</p>', unsafe_allow_html=True)
             for item in analysis.get('leave_activities', []):
-                st.markdown(f'<div style="background: rgba(0, 200, 83, 0.1); border-radius: var(--radius-sm); padding: 1rem; margin: 0.5rem 0; color: var(--text-dark); font-weight: 500; border-left: 3px solid var(--success); font-family: Inter, sans-serif; transition: transform 0.15s ease;">{item}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background: #d4edda; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #28a745; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
         with col2:
-            st.markdown('<p style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-bottom: 0.75rem;">Avoid During Leave:</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Avoid During Leave:</p>', unsafe_allow_html=True)
             for item in analysis.get('leave_avoid', []):
-                st.markdown(f'<div style="background: rgba(255, 61, 0, 0.1); border-radius: var(--radius-sm); padding: 1rem; margin: 0.5rem 0; color: var(--text-dark); font-weight: 500; border-left: 3px solid var(--danger); font-family: Inter, sans-serif; transition: transform 0.15s ease;">{item}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background: #f8d7da; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #dc3545; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
     else:
         with col1:
-            st.markdown('<p style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-bottom: 0.75rem;">If You Work Tomorrow:</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">If You Work Tomorrow:</p>', unsafe_allow_html=True)
             for item in analysis.get('work_activities', []):
-                st.markdown(f'<div style="background: rgba(0, 200, 83, 0.1); border-radius: var(--radius-sm); padding: 1rem; margin: 0.5rem 0; color: var(--text-dark); font-weight: 500; border-left: 3px solid var(--success); font-family: Inter, sans-serif; transition: transform 0.15s ease;">{item}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background: #d4edda; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #28a745; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
         with col2:
-            st.markdown('<p style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-bottom: 0.75rem;">Avoid While Working:</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">Avoid While Working:</p>', unsafe_allow_html=True)
             for item in analysis.get('work_avoid', []):
-                st.markdown(f'<div style="background: rgba(255, 61, 0, 0.1); border-radius: var(--radius-sm); padding: 1rem; margin: 0.5rem 0; color: var(--text-dark); font-weight: 500; border-left: 3px solid var(--danger); font-family: Inter, sans-serif; transition: transform 0.15s ease;">{item}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background: #f8d7da; border-radius: 8px; padding: 1rem; margin: 0.5rem 0; color: #1a1a1a; font-weight: 500; border-left: 3px solid #dc3545; font-family: Lexend Deca, sans-serif;">{item}</div>', unsafe_allow_html=True)
 
     # Warning signs and recovery time
     if analysis.get('warning_signs'):
-        st.markdown('<p style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem;">Warning Signs to Watch For:</p>', unsafe_allow_html=True)
-        for sign in analysis['warning_signs']:
-            st.markdown(f'<div style="background: rgba(255, 193, 7, 0.1); border-radius: var(--radius-sm); padding: 1rem; margin: 0.5rem 0; color: var(--text-dark); font-weight: 500; border-left: 3px solid var(--warning); font-family: Inter, sans-serif; transition: transform 0.15s ease;">{sign}</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-weight: 500; font-family: Lexend Deca, sans-serif;">
+            <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">Watch for these warning signs:</strong><br>
+            {' • '.join(analysis['warning_signs'])}
+        </div>
+        """, unsafe_allow_html=True)
 
     if analysis.get('recovery_estimate'):
-        st.markdown(f'<p style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-top: 2rem;">Estimated Recovery Time: <span style="color: var(--primary);">{analysis["recovery_estimate"]}</span></p>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; border: 1px solid #dee2e6; font-weight: 500; font-family: Lexend Deca, sans-serif;">
+            <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">Expected recovery time:</strong> {analysis['recovery_estimate']}
+        </div>
+        """, unsafe_allow_html=True)
 
     # AI Generated Leave Mail (use provided leave_mail)
     if analysis['leave_type'] in ['full_day_leave', 'half_day_leave'] and leave_mail:
-        st.markdown('<h4 style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600; margin-top: 2rem;">📧 AI-Generated Leave Application</h4>', unsafe_allow_html=True)
+        st.markdown('<h4 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600; margin-top: 2rem;">📧 AI-Generated Leave Application</h4>', unsafe_allow_html=True)
         st.markdown(f"""
-        <div style="background: var(--bg-light); border-radius: var(--radius-md); padding: 1.5rem; margin: 1rem 0; border: 1px solid var(--border-light); font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--text-dark); white-space: pre-line;">
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; border: 1px solid #dee2e6; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #1a1a1a; white-space: pre-line;">
 {leave_mail}
         </div>
         """, unsafe_allow_html=True)
@@ -549,8 +433,8 @@ def render_copy_button(text_to_copy: str) -> None:
     components.html(
         f"""
         <div>
-          <button id=\"copyBtn\" style=\"background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 16px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.2s ease;box-shadow:var(--shadow-sm);\">📋 Copy Email</button>
-          <span id=\"copyStatus\" style=\"margin-left:8px;color:var(--text-dark);font-size:0.9rem;font-family:Inter,sans-serif;\"></span>
+          <button id=\"copyBtn\" style=\"background:#007aff;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer;\">📋 Copy Email</button>
+          <span id=\"copyStatus\" style=\"margin-left:8px;color:#1a1a1a;font-size:0.9rem;\"></span>
         </div>
         <script>
           const text = {safe_text};
@@ -571,14 +455,14 @@ def render_copy_button(text_to_copy: str) -> None:
     )
 
 def main():
-    # Header with modern styling using CSS variables
-    st.markdown('<h1 class="main-title">Should I Take Leave Tomorrow?</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">AI-powered decision making for your work-life balance</p>', unsafe_allow_html=True)
+    # Header with inline styles to ensure visibility
+    st.markdown('<h1 style="font-size: 2.5rem; font-weight: 600; text-align: center; color: #1a1a1a; margin-bottom: 0.5rem; font-family: Lexend Deca, sans-serif;">Should I Take Leave Tomorrow?</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="font-size: 1.2rem; text-align: center; color: #666; margin-bottom: 3rem; font-family: Lexend Deca, sans-serif;">AI-powered decision making for your work-life balance</p>', unsafe_allow_html=True)
     
     # Get tomorrow's weather
     weather = get_weather_tomorrow()
     
-    # Weather display with inline styles and animation using CSS variables
+    # Weather display with inline styles and animation
     # Determine weather icon and animation based on condition
     weather_condition_lower = weather['condition'].lower()
     if 'rain' in weather_condition_lower or 'shower' in weather_condition_lower:
@@ -636,23 +520,22 @@ def main():
             animation: gentle-float 3s ease-in-out infinite;
         }}
     </style>
-    <div style="background: var(--bg-light); border-radius: var(--radius-md); padding: 1.5rem; margin: 1rem 0; color: var(--text-dark); text-align: center; border: 1px solid var(--border-light); font-family: Inter, sans-serif;">
-        <h3 style="margin: 0; color: var(--text-dark); font-weight: 600; font-family: Inter, sans-serif;">Tomorrow's Weather in Dhaka</h3>
+    <div style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; color: #1a1a1a; text-align: center; border: 1px solid #dee2e6; font-family: Lexend Deca, sans-serif;">
+        <h3 style="margin: 0; color: #1a1a1a; font-weight: 600; font-family: Lexend Deca, sans-serif;">Tomorrow's Weather in Dhaka</h3>
         <div style="font-size: 2rem; margin: 0.5rem 0;" class="{animation_class}">{weather_icon}</div>
-        <p style="font-size: 1.1rem; margin: 0.5rem 0; color: var(--text-dark); font-family: Inter, sans-serif;">
-            <strong style="color: var(--text-dark); font-family: Inter, sans-serif;">{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
+        <p style="font-size: 1.1rem; margin: 0.5rem 0; color: #1a1a1a; font-family: Lexend Deca, sans-serif;">
+            <strong style="color: #1a1a1a; font-family: Lexend Deca, sans-serif;">{weather['temp_high']}°C / {weather['temp_low']}°C</strong><br>
             {weather['condition']} • {weather['rain_chance']}% chance of rain
         </p>
     </div>
     ''', unsafe_allow_html=True)
     
     # Input section header
-    st.markdown('<h3 style="color: var(--text-dark); font-family: Inter, sans-serif; font-weight: 600;">How are you feeling today?</h3>', unsafe_allow_html=True)
+    st.markdown('<h3 style="color: #1a1a1a; font-family: Lexend Deca, sans-serif; font-weight: 600;">How are you feeling today?</h3>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown('<div style="padding: 0.5rem 0; border-radius: var(--radius-md); background: var(--bg-light); margin-bottom: 1rem;">', unsafe_allow_html=True)
         mood = st.selectbox(
             "Overall mood",
             ["Excellent", "Good", "Okay", "Struggling", "Overwhelmed", "Exhausted"],
@@ -667,10 +550,8 @@ def main():
             ["20+ days", "15-20 days", "10-15 days", "5-10 days", "1-5 days", "No leave left"],
             help="How many days of leave do you have remaining?"
         )
-        st.markdown('</div>', unsafe_allow_html=True)
         
     with col2:
-        st.markdown('<div style="padding: 0.5rem 0; border-radius: var(--radius-md); background: var(--bg-light); margin-bottom: 1rem;">', unsafe_allow_html=True)
         work_pressure = st.slider("Work pressure level", 1, 10, 5, help="1 = Very light, 10 = Overwhelming")
         personal_stress = st.slider("Personal life stress", 1, 10, 4, help="1 = Very peaceful, 10 = Major issues")
         
@@ -683,7 +564,6 @@ def main():
             "When did you last take a day off?",
             ["Never", "6+ months ago", "2-6 months ago", "1-2 months ago", "Within last month"]
         )
-        st.markdown('</div>', unsafe_allow_html=True)
     
     tomorrow_importance = st.selectbox(
         "How critical is tomorrow's work?",
@@ -695,22 +575,20 @@ def main():
         ["Strong - great family/friend support", "Good - some supportive people", "Limited - few people to talk to", "Weak - feeling quite isolated"]
     )
     
-    # Analysis button with updated styling
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("Get My Personalized Recommendation", type="primary", use_container_width=True):
-            data = {
-                'mood': mood,
-                'energy': energy,
-                'sleep': sleep,
-                'work_pressure': work_pressure,
-                'personal_stress': personal_stress,
-                'physical_symptoms': physical_symptoms,
-                'last_break': last_break,
-                'tomorrow_importance': tomorrow_importance,
-                'support': support,
-                'leave_balance': leave_balance
-            }
+    # Analysis button
+    if st.button("Get My Personalized Recommendation", type="primary"):
+        data = {
+            'mood': mood,
+            'energy': energy,
+            'sleep': sleep,
+            'work_pressure': work_pressure,
+            'personal_stress': personal_stress,
+            'physical_symptoms': physical_symptoms,
+            'last_break': last_break,
+            'tomorrow_importance': tomorrow_importance,
+            'support': support,
+            'leave_balance': leave_balance
+        }
         
         # Minimal loading animation
         loading_placeholder = st.empty()
@@ -747,15 +625,14 @@ def main():
         st.session_state.generated_leave_mail = generate_leave_mail() if analysis['leave_type'] in ['full_day_leave', 'half_day_leave'] else None
         render_analysis_ui(st.session_state.analysis, st.session_state.generated_leave_mail)
     
-    # Footer with updated styling
+    # Footer
     st.markdown("---")
     st.markdown("""
-    <div style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 1.5rem; font-family: Inter, sans-serif;">
-        <strong style="color: var(--text-light); font-family: Inter, sans-serif;">Your wellbeing matters.</strong> This tool provides guidance, not medical advice.<br>
+    <div style="text-align: center; color: #666; font-size: 0.9rem; padding: 1.5rem; font-family: Lexend Deca, sans-serif;">
+        <strong style="color: #666; font-family: Lexend Deca, sans-serif;">Your wellbeing matters.</strong> This tool provides guidance, not medical advice.<br>
         For serious mental health concerns, please consult a healthcare professional.
     </div>
     """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
-
